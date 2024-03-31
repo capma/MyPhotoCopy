@@ -88,6 +88,11 @@ namespace PhotoMove
             label7 = new Label();
             label2 = new Label();
             tabPage2 = new TabPage();
+            splitContainer2 = new SplitContainer();
+            clbCameraModelsWithValidExifDates = new CheckedListBox();
+            label5 = new Label();
+            clbCameraModelsWithoutValidExifDates = new CheckedListBox();
+            label8 = new Label();
             label3 = new Label();
             tabPage3 = new TabPage();
             checkBox4 = new CheckBox();
@@ -97,11 +102,7 @@ namespace PhotoMove
             exitToolStripMenuItem = new ToolStripMenuItem();
             helpToolStripMenuItem = new ToolStripMenuItem();
             aboutToolStripMenuItem = new ToolStripMenuItem();
-            splitContainer2 = new SplitContainer();
-            clbCameraModelsWithValidExifDates = new CheckedListBox();
-            label5 = new Label();
-            clbCameraModelsWithoutValidExifDates = new CheckedListBox();
-            label8 = new Label();
+            pgbCopyingOrMovingFiles = new ProgressBar();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
             groupBox3.SuspendLayout();
@@ -121,12 +122,12 @@ namespace PhotoMove
             splitContainer1.Panel2.SuspendLayout();
             splitContainer1.SuspendLayout();
             tabPage2.SuspendLayout();
-            tabPage3.SuspendLayout();
-            menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer2).BeginInit();
             splitContainer2.Panel1.SuspendLayout();
             splitContainer2.Panel2.SuspendLayout();
             splitContainer2.SuspendLayout();
+            tabPage3.SuspendLayout();
+            menuStrip1.SuspendLayout();
             SuspendLayout();
             // 
             // groupBox1
@@ -377,6 +378,7 @@ namespace PhotoMove
             // 
             // grbCancel
             // 
+            grbCancel.Controls.Add(pgbCopyingOrMovingFiles);
             grbCancel.Controls.Add(btnCancel);
             grbCancel.Location = new Point(6, 22);
             grbCancel.Name = "grbCancel";
@@ -657,7 +659,7 @@ namespace PhotoMove
             splitContainer1.Location = new Point(3, 26);
             splitContainer1.Name = "splitContainer1";
             // 
-            // 
+            // splitContainer1.Panel1
             // 
             splitContainer1.Panel1.Controls.Add(clbFilesWithValidExifDates);
             splitContainer1.Panel1.Controls.Add(label6);
@@ -728,6 +730,61 @@ namespace PhotoMove
             tabPage2.TabIndex = 1;
             tabPage2.Text = "Camera Models";
             tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // splitContainer2
+            // 
+            splitContainer2.Dock = DockStyle.Fill;
+            splitContainer2.Location = new Point(3, 26);
+            splitContainer2.Name = "splitContainer2";
+            // 
+            // splitContainer2.Panel1
+            // 
+            splitContainer2.Panel1.Controls.Add(clbCameraModelsWithValidExifDates);
+            splitContainer2.Panel1.Controls.Add(label5);
+            // 
+            // splitContainer2.Panel2
+            // 
+            splitContainer2.Panel2.Controls.Add(clbCameraModelsWithoutValidExifDates);
+            splitContainer2.Panel2.Controls.Add(label8);
+            splitContainer2.Size = new Size(408, 219);
+            splitContainer2.SplitterDistance = 204;
+            splitContainer2.TabIndex = 12;
+            // 
+            // clbCameraModelsWithValidExifDates
+            // 
+            clbCameraModelsWithValidExifDates.Dock = DockStyle.Fill;
+            clbCameraModelsWithValidExifDates.FormattingEnabled = true;
+            clbCameraModelsWithValidExifDates.Location = new Point(0, 14);
+            clbCameraModelsWithValidExifDates.Name = "clbCameraModelsWithValidExifDates";
+            clbCameraModelsWithValidExifDates.Size = new Size(204, 205);
+            clbCameraModelsWithValidExifDates.TabIndex = 3;
+            // 
+            // label5
+            // 
+            label5.Dock = DockStyle.Top;
+            label5.Location = new Point(0, 0);
+            label5.Name = "label5";
+            label5.Size = new Size(204, 14);
+            label5.TabIndex = 2;
+            label5.Text = "Files With Valid Exif Dates:";
+            // 
+            // clbCameraModelsWithoutValidExifDates
+            // 
+            clbCameraModelsWithoutValidExifDates.Dock = DockStyle.Fill;
+            clbCameraModelsWithoutValidExifDates.FormattingEnabled = true;
+            clbCameraModelsWithoutValidExifDates.Location = new Point(0, 14);
+            clbCameraModelsWithoutValidExifDates.Name = "clbCameraModelsWithoutValidExifDates";
+            clbCameraModelsWithoutValidExifDates.Size = new Size(200, 205);
+            clbCameraModelsWithoutValidExifDates.TabIndex = 4;
+            // 
+            // label8
+            // 
+            label8.Dock = DockStyle.Top;
+            label8.Location = new Point(0, 0);
+            label8.Name = "label8";
+            label8.Size = new Size(200, 14);
+            label8.TabIndex = 3;
+            label8.Text = "Files Without Valid Exif Dates:";
             // 
             // label3
             // 
@@ -808,60 +865,13 @@ namespace PhotoMove
             aboutToolStripMenuItem.Text = "About";
             aboutToolStripMenuItem.Click += aboutToolStripMenuItem_Click;
             // 
-            // splitContainer2
+            // pgbCopyingOrMovingFiles
             // 
-            splitContainer2.Dock = DockStyle.Fill;
-            splitContainer2.Location = new Point(3, 26);
-            splitContainer2.Name = "splitContainer2";
-            // 
-            // splitContainer2.Panel1
-            // 
-            splitContainer2.Panel1.Controls.Add(clbCameraModelsWithValidExifDates);
-            splitContainer2.Panel1.Controls.Add(label5);
-            // 
-            // splitContainer2.Panel2
-            // 
-            splitContainer2.Panel2.Controls.Add(clbCameraModelsWithoutValidExifDates);
-            splitContainer2.Panel2.Controls.Add(label8);
-            splitContainer2.Size = new Size(408, 219);
-            splitContainer2.SplitterDistance = 204;
-            splitContainer2.TabIndex = 12;
-            // 
-            // clbCameraModelsWithValidExifDates
-            // 
-            clbCameraModelsWithValidExifDates.Dock = DockStyle.Fill;
-            clbCameraModelsWithValidExifDates.FormattingEnabled = true;
-            clbCameraModelsWithValidExifDates.Location = new Point(0, 14);
-            clbCameraModelsWithValidExifDates.Name = "clbCameraModelsWithValidExifDates";
-            clbCameraModelsWithValidExifDates.Size = new Size(204, 205);
-            clbCameraModelsWithValidExifDates.TabIndex = 3;
-            // 
-            // label5
-            // 
-            label5.Dock = DockStyle.Top;
-            label5.Location = new Point(0, 0);
-            label5.Name = "label5";
-            label5.Size = new Size(204, 14);
-            label5.TabIndex = 2;
-            label5.Text = "Files With Valid Exif Dates:";
-            // 
-            // clbCameraModelsWithoutValidExifDates
-            // 
-            clbCameraModelsWithoutValidExifDates.Dock = DockStyle.Fill;
-            clbCameraModelsWithoutValidExifDates.FormattingEnabled = true;
-            clbCameraModelsWithoutValidExifDates.Location = new Point(0, 14);
-            clbCameraModelsWithoutValidExifDates.Name = "clbCameraModelsWithoutValidExifDates";
-            clbCameraModelsWithoutValidExifDates.Size = new Size(200, 205);
-            clbCameraModelsWithoutValidExifDates.TabIndex = 4;
-            // 
-            // label8
-            // 
-            label8.Dock = DockStyle.Top;
-            label8.Location = new Point(0, 0);
-            label8.Name = "label8";
-            label8.Size = new Size(200, 14);
-            label8.TabIndex = 3;
-            label8.Text = "Files Without Valid Exif Dates:";
+            pgbCopyingOrMovingFiles.Location = new Point(123, 22);
+            pgbCopyingOrMovingFiles.Name = "pgbCopyingOrMovingFiles";
+            pgbCopyingOrMovingFiles.Size = new Size(390, 23);
+            pgbCopyingOrMovingFiles.TabIndex = 14;
+            pgbCopyingOrMovingFiles.Visible = false;
             // 
             // frmMain
             // 
@@ -909,14 +919,14 @@ namespace PhotoMove
             ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
             splitContainer1.ResumeLayout(false);
             tabPage2.ResumeLayout(false);
-            tabPage3.ResumeLayout(false);
-            tabPage3.PerformLayout();
-            menuStrip1.ResumeLayout(false);
-            menuStrip1.PerformLayout();
             splitContainer2.Panel1.ResumeLayout(false);
             splitContainer2.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainer2).EndInit();
             splitContainer2.ResumeLayout(false);
+            tabPage3.ResumeLayout(false);
+            tabPage3.PerformLayout();
+            menuStrip1.ResumeLayout(false);
+            menuStrip1.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -994,5 +1004,6 @@ namespace PhotoMove
         private Label label5;
         private CheckedListBox clbCameraModelsWithoutValidExifDates;
         private Label label8;
+        private ProgressBar pgbCopyingOrMovingFiles;
     }
 }

@@ -9,6 +9,8 @@
 *.user
 *.userosscache
 *.sln.docstates
+PhotoMove/bin/
+PhotoMove/obj/
 
 
 # User-specific files (MonoDevelop/Xamarin Studio)

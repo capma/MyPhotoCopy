@@ -14,8 +14,7 @@ namespace PhotoMove
 
     public partial class frmMain : Form
     {
-        CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-        //CancellationToken cancellationToken;
+        CancellationTokenSource cancellationTokenSource;
 
         public frmMain()
         {
@@ -23,8 +22,6 @@ namespace PhotoMove
             InitializeOtherComponents();
             InitComboBoxOutputFolderStructure();
             InitComboBoxCopyOrMoveExistFiles();
-
-            //cancellationTokenSource = new CancellationTokenSource();
         }
 
         #region Events
