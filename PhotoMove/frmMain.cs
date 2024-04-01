@@ -265,7 +265,7 @@ namespace PhotoMove
         private void FindFiles()
         {
             string folderPath = txtPhotoFolder.Text;
-            //List<string> filesWithValidExifDates = new List<string>();
+            filesWithValidExifDates = new List<string>();
             List<string> filesWithInvalidExifDates = new List<string>();
             List<string> listCameraModel = new List<string>();
 
