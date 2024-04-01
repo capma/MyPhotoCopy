@@ -58,5 +58,29 @@ namespace PhotoMove {
                 this["DuplicatesFolder"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int selectedOutputFolderStructure {
+            get {
+                return ((int)(this["selectedOutputFolderStructure"]));
+            }
+            set {
+                this["selectedOutputFolderStructure"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int selectedCopyMoveExistedFiles {
+            get {
+                return ((int)(this["selectedCopyMoveExistedFiles"]));
+            }
+            set {
+                this["selectedCopyMoveExistedFiles"] = value;
+            }
+        }
     }
 }

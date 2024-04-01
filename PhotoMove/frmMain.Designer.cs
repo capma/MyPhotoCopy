@@ -53,9 +53,10 @@ namespace PhotoMove
             lblTitleTotalFiles = new Label();
             lblTotalFiles = new Label();
             btnFindPhotos = new Button();
-            groupBox4 = new GroupBox();
+            grbCopyOrMove = new GroupBox();
             grbCancel = new GroupBox();
-            btnCancel = new Button();
+            pgbCopyingOrMovingFiles = new ProgressBar();
+            btnCancelCopyingOrMoving = new Button();
             grbProgress = new GroupBox();
             lblCopyingProgress = new Label();
             lblCopyingFiles = new Label();
@@ -102,12 +103,13 @@ namespace PhotoMove
             exitToolStripMenuItem = new ToolStripMenuItem();
             helpToolStripMenuItem = new ToolStripMenuItem();
             aboutToolStripMenuItem = new ToolStripMenuItem();
-            pgbCopyingOrMovingFiles = new ProgressBar();
+            statusStrip1 = new StatusStrip();
+            toolStripStatusLabel1 = new ToolStripStatusLabel();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
             groupBox3.SuspendLayout();
             grbFindingPhottos.SuspendLayout();
-            groupBox4.SuspendLayout();
+            grbCopyOrMove.SuspendLayout();
             grbCancel.SuspendLayout();
             grbProgress.SuspendLayout();
             groupBox5.SuspendLayout();
@@ -128,6 +130,7 @@ namespace PhotoMove
             splitContainer2.SuspendLayout();
             tabPage3.SuspendLayout();
             menuStrip1.SuspendLayout();
+            statusStrip1.SuspendLayout();
             SuspendLayout();
             // 
             // groupBox1
@@ -361,39 +364,48 @@ namespace PhotoMove
             btnFindPhotos.UseVisualStyleBackColor = true;
             btnFindPhotos.Click += btnFindPhotos_Click;
             // 
-            // groupBox4
+            // grbCopyOrMove
             // 
-            groupBox4.Controls.Add(grbCancel);
-            groupBox4.Controls.Add(grbProgress);
-            groupBox4.Controls.Add(chkAlwaysShowSummaryReport);
-            groupBox4.Controls.Add(btnShowSummaryReport);
-            groupBox4.Controls.Add(btnMoveToDestinationFolders);
-            groupBox4.Controls.Add(btnCopyToDestinationFolders);
-            groupBox4.Location = new Point(12, 493);
-            groupBox4.Name = "groupBox4";
-            groupBox4.Size = new Size(538, 172);
-            groupBox4.TabIndex = 3;
-            groupBox4.TabStop = false;
-            groupBox4.Text = "Step 4: Copy or Move Photos to Date Sorted Folders";
+            grbCopyOrMove.Controls.Add(grbCancel);
+            grbCopyOrMove.Controls.Add(grbProgress);
+            grbCopyOrMove.Controls.Add(chkAlwaysShowSummaryReport);
+            grbCopyOrMove.Controls.Add(btnShowSummaryReport);
+            grbCopyOrMove.Controls.Add(btnMoveToDestinationFolders);
+            grbCopyOrMove.Controls.Add(btnCopyToDestinationFolders);
+            grbCopyOrMove.Enabled = false;
+            grbCopyOrMove.Location = new Point(12, 493);
+            grbCopyOrMove.Name = "grbCopyOrMove";
+            grbCopyOrMove.Size = new Size(538, 172);
+            grbCopyOrMove.TabIndex = 3;
+            grbCopyOrMove.TabStop = false;
+            grbCopyOrMove.Text = "Step 4: Copy or Move Photos to Date Sorted Folders";
             // 
             // grbCancel
             // 
             grbCancel.Controls.Add(pgbCopyingOrMovingFiles);
-            grbCancel.Controls.Add(btnCancel);
+            grbCancel.Controls.Add(btnCancelCopyingOrMoving);
             grbCancel.Location = new Point(6, 22);
             grbCancel.Name = "grbCancel";
             grbCancel.Size = new Size(526, 62);
             grbCancel.TabIndex = 5;
             grbCancel.TabStop = false;
             // 
-            // btnCancel
+            // pgbCopyingOrMovingFiles
             // 
-            btnCancel.Location = new Point(6, 22);
-            btnCancel.Name = "btnCancel";
-            btnCancel.Size = new Size(111, 26);
-            btnCancel.TabIndex = 0;
-            btnCancel.Text = "Cancel";
-            btnCancel.UseVisualStyleBackColor = true;
+            pgbCopyingOrMovingFiles.Location = new Point(123, 22);
+            pgbCopyingOrMovingFiles.Name = "pgbCopyingOrMovingFiles";
+            pgbCopyingOrMovingFiles.Size = new Size(390, 23);
+            pgbCopyingOrMovingFiles.TabIndex = 14;
+            // 
+            // btnCancelCopyingOrMoving
+            // 
+            btnCancelCopyingOrMoving.Location = new Point(6, 22);
+            btnCancelCopyingOrMoving.Name = "btnCancelCopyingOrMoving";
+            btnCancelCopyingOrMoving.Size = new Size(111, 26);
+            btnCancelCopyingOrMoving.TabIndex = 0;
+            btnCancelCopyingOrMoving.Text = "Cancel";
+            btnCancelCopyingOrMoving.UseVisualStyleBackColor = true;
+            btnCancelCopyingOrMoving.Click += btnCancelCopyingOrMoving_Click;
             // 
             // grbProgress
             // 
@@ -423,6 +435,7 @@ namespace PhotoMove
             lblCopyingFiles.Name = "lblCopyingFiles";
             lblCopyingFiles.Size = new Size(111, 23);
             lblCopyingFiles.TabIndex = 8;
+            lblCopyingFiles.Text = "0";
             lblCopyingFiles.TextAlign = ContentAlignment.MiddleRight;
             // 
             // chkAlwaysShowSummaryReport
@@ -481,6 +494,7 @@ namespace PhotoMove
             cmbOutputFolderStructure.Name = "cmbOutputFolderStructure";
             cmbOutputFolderStructure.Size = new Size(403, 23);
             cmbOutputFolderStructure.TabIndex = 1;
+            cmbOutputFolderStructure.SelectedIndexChanged += cmbOutputFolderStructure_SelectedIndexChanged;
             // 
             // groupBox6
             // 
@@ -865,25 +879,33 @@ namespace PhotoMove
             aboutToolStripMenuItem.Text = "About";
             aboutToolStripMenuItem.Click += aboutToolStripMenuItem_Click;
             // 
-            // pgbCopyingOrMovingFiles
+            // statusStrip1
             // 
-            pgbCopyingOrMovingFiles.Location = new Point(123, 22);
-            pgbCopyingOrMovingFiles.Name = "pgbCopyingOrMovingFiles";
-            pgbCopyingOrMovingFiles.Size = new Size(390, 23);
-            pgbCopyingOrMovingFiles.TabIndex = 14;
-            pgbCopyingOrMovingFiles.Visible = false;
+            statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1 });
+            statusStrip1.Location = new Point(0, 670);
+            statusStrip1.Name = "statusStrip1";
+            statusStrip1.Size = new Size(1023, 22);
+            statusStrip1.TabIndex = 10;
+            statusStrip1.Text = "statusStrip1";
+            // 
+            // toolStripStatusLabel1
+            // 
+            toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+            toolStripStatusLabel1.Size = new Size(118, 17);
+            toolStripStatusLabel1.Text = "toolStripStatusLabel1";
             // 
             // frmMain
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1023, 671);
+            ClientSize = new Size(1023, 692);
+            Controls.Add(statusStrip1);
             Controls.Add(tabFileOptions);
             Controls.Add(groupBox8);
             Controls.Add(groupBox7);
             Controls.Add(groupBox6);
             Controls.Add(groupBox5);
-            Controls.Add(groupBox4);
+            Controls.Add(grbCopyOrMove);
             Controls.Add(groupBox3);
             Controls.Add(groupBox2);
             Controls.Add(groupBox1);
@@ -900,8 +922,8 @@ namespace PhotoMove
             groupBox3.ResumeLayout(false);
             grbFindingPhottos.ResumeLayout(false);
             grbFindingPhottos.PerformLayout();
-            groupBox4.ResumeLayout(false);
-            groupBox4.PerformLayout();
+            grbCopyOrMove.ResumeLayout(false);
+            grbCopyOrMove.PerformLayout();
             grbCancel.ResumeLayout(false);
             grbProgress.ResumeLayout(false);
             groupBox5.ResumeLayout(false);
@@ -927,6 +949,8 @@ namespace PhotoMove
             tabPage3.PerformLayout();
             menuStrip1.ResumeLayout(false);
             menuStrip1.PerformLayout();
+            statusStrip1.ResumeLayout(false);
+            statusStrip1.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -942,7 +966,7 @@ namespace PhotoMove
         private Button btnChooseOutputFolder;
         private GroupBox groupBox3;
         private Button btnFindPhotos;
-        private GroupBox groupBox4;
+        private GroupBox grbCopyOrMove;
         private Label lblTitleTotalFiles;
         private Label lblTotalFiles;
         private Label lblTitleHaveExifButNoValidDate;
@@ -964,7 +988,7 @@ namespace PhotoMove
         private Label lblCopyingProgress;
         private Label lblCopyingFiles;
         private GroupBox grbCancel;
-        private Button btnCancel;
+        private Button btnCancelCopyingOrMoving;
         private GroupBox groupBox7;
         private ComboBox cmbCopyMoveExistedFiles;
         private Button btnChooseDuplicatesFolderPath;
@@ -1005,5 +1029,7 @@ namespace PhotoMove
         private CheckedListBox clbCameraModelsWithoutValidExifDates;
         private Label label8;
         private ProgressBar pgbCopyingOrMovingFiles;
+        private StatusStrip statusStrip1;
+        private ToolStripStatusLabel toolStripStatusLabel1;
     }
 }
