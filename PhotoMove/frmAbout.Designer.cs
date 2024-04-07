@@ -53,7 +53,7 @@
             textBox1.Size = new System.Drawing.Size(371, 112);
             textBox1.TabIndex = 2;
             textBox1.TabStop = false;
-            textBox1.Text = "\r\nVersion 1.0.0.0\r\n\r\nCopyright @ 2024\r\n\r\nby Quang Tri Pham at NoCountryForOldMen";
+            textBox1.Text = "\r\nVersion 1.0.0.0\r\n\r\nCopyright @ 2024\r\n\r\nby Somebody at NoCountryForOldMen";
             // 
             // frmAbout
             // 

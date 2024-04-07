@@ -12,11 +12,14 @@ namespace PhotoMove
     using System.Threading;
     using System.Threading.Tasks;
     using System.Diagnostics;
+    using PhotoMove.Models;
+    //using System.Reflection;
 
     public partial class frmMain : Form
     {
-        CancellationTokenSource cancellationTokenSource;
-        List<string> filesWithValidExifDates = new List<string>();
+        CancellationTokenSource cancellationTokenSource = new();
+        List<ScanFile> scanFiles = new();
+        UserOptions userOptions = new();
         private const string noModelInfo = "No Model Info";
 
         public frmMain()
@@ -25,6 +28,7 @@ namespace PhotoMove
             InitializeOtherComponents();
             InitComboBoxOutputFolderStructure();
             InitComboBoxCopyOrMoveExistFiles();
+            InitListViews();
         }
 
         #region Events
@@ -32,7 +36,6 @@ namespace PhotoMove
         {
             // reset
             grbCopyOrMove.Enabled = false;
-            filesWithValidExifDates = new List<string>();
 
             FolderBrowserDialog folderBrowserDialog = new();
             DialogResult result = folderBrowserDialog.ShowDialog();
@@ -42,6 +45,8 @@ namespace PhotoMove
                 txtPhotoFolder.Text = folderPath;
                 PhotoMoveSettings.Default.SourceFolder = folderPath;
                 PhotoMoveSettings.Default.Save();
+
+                scanFiles = new();
             }
         }
 
@@ -71,6 +76,19 @@ namespace PhotoMove
             }
         }
 
+        private void btnChooseFolderForFilesWithNoExif_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog folderBrowserDialog = new();
+            DialogResult result = folderBrowserDialog.ShowDialog();
+            if (result == DialogResult.OK)
+            {
+                string folderPath = folderBrowserDialog.SelectedPath;
+                txtFolderForFilesWithNoExif.Text = folderPath;
+                PhotoMoveSettings.Default.FilesWithNoExifDateCreatedFolder = folderPath;
+                PhotoMoveSettings.Default.Save();
+            }
+        }
+
         private async void btnFindPhotos_Click(object sender, EventArgs e)
         {
             cancellationTokenSource = new CancellationTokenSource();
@@ -81,9 +99,10 @@ namespace PhotoMove
 
                 grbFindingPhottos.Visible = true;
                 pgbFindingFiles.Visible = true;
-                
 
-                await Task.Run(() => FindFiles(), cancellationTokenSource.Token);
+                GetUserOptions();
+
+                await Task.Run(() => DoScanFiles(), cancellationTokenSource.Token);
 
                 grbFindingPhottos.Visible = false;
                 pgbFindingFiles.Visible = false;
@@ -107,16 +126,16 @@ namespace PhotoMove
                 grbProgress.Visible = true;
                 lblCopyingFiles.Text = "0";
 
+                GetUserOptions();
+
                 await Task.Run(() => CopyOrMoveFiles(), cancellationTokenSource.Token);
 
                 grbCancel.Visible = false;
-                //grbProgress.Visible = false;
             }
             catch (OperationCanceledException)
             {
                 //break;
                 grbCancel.Visible = false;
-                //grbProgress.Visible = false;
             }
         }
 
@@ -153,6 +172,40 @@ namespace PhotoMove
         {
             cancellationTokenSource.Cancel();
         }
+
+        private void btnUncheckAllFileTypes_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem lvi in lvFilesWithValidExifDates.CheckedItems)
+            {
+                lvi.Checked = false;
+            }
+
+            foreach (ListViewItem lvi in lvFilesWithoutValidExifDates.CheckedItems)
+            {
+                lvi.Checked = false;
+            }
+        }
+
+        private void btnUncheckAllCameraModel_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem lvi in lvCameraModelsWithoutValidExifDates.CheckedItems)
+            {
+                lvi.Checked = false;
+            }
+
+            foreach (ListViewItem lvi in lvCameraModelsWithValidExifDates.CheckedItems)
+            {
+                lvi.Checked = false;
+            }
+        }
+
+        private void btnShowListScanFiles_Click(object sender, EventArgs e)
+        {
+            frmListScanFiles childForm = new();
+            childForm.ShowData(scanFiles);
+            childForm.ShowDialog();
+        }
+
         #endregion
 
         #region Methods
@@ -163,10 +216,7 @@ namespace PhotoMove
             txtPhotoFolder.Text = (string.IsNullOrEmpty(PhotoMoveSettings.Default.SourceFolder)) ? string.Empty : PhotoMoveSettings.Default.SourceFolder.ToString();
             txtDestinationFolder.Text = (string.IsNullOrEmpty(PhotoMoveSettings.Default.DestinationFolder)) ? string.Empty : PhotoMoveSettings.Default.DestinationFolder.ToString();
             txtDuplicatesFolderPath.Text = (string.IsNullOrEmpty(PhotoMoveSettings.Default.DuplicatesFolder)) ? string.Empty : PhotoMoveSettings.Default.DuplicatesFolder.ToString();
-
-            //cmbCopyMoveExistedFiles.SelectedIndex = PhotoMoveSettings.Default.selectedCopyMoveExistedFiles;
-            //cmbOutputFolderStructure.SelectedIndex = PhotoMoveSettings.Default.selectedOutputFolderStructure;
-
+            txtFolderForFilesWithNoExif.Text = (string.IsNullOrEmpty(PhotoMoveSettings.Default.FilesWithNoExifDateCreatedFolder)) ? string.Empty : PhotoMoveSettings.Default.FilesWithNoExifDateCreatedFolder.ToString();
         }
 
         private void InitComboBoxOutputFolderStructure()
@@ -201,7 +251,7 @@ namespace PhotoMove
 
         private string GenerateUniqueCopyName(string filePath)
         {
-            string directory = Path.GetDirectoryName(filePath);
+            string directory = Path.GetDirectoryName(filePath) ?? string.Empty;
             string fileName = Path.GetFileNameWithoutExtension(filePath);
             string extension = Path.GetExtension(filePath);
 
@@ -262,13 +312,8 @@ namespace PhotoMove
             }
         }
 
-        private void FindFiles()
+        private void DoScanFiles()
         {
-            string folderPath = txtPhotoFolder.Text;
-            filesWithValidExifDates = new List<string>();
-            List<string> filesWithInvalidExifDates = new List<string>();
-            List<string> listCameraModel = new List<string>();
-
             int totalCount = 0;
             int exifFileCount = 0;
             int validDateCount = 0;
@@ -277,7 +322,7 @@ namespace PhotoMove
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            var files = System.IO.Directory.GetFiles(folderPath, "*.*", SearchOption.AllDirectories);
+            var files = System.IO.Directory.GetFiles(userOptions.selectedFolderWithPhotosToProcess, "*.*", SearchOption.AllDirectories);
 
             pgbFindingFiles.Invoke((MethodInvoker)delegate
             {
@@ -292,16 +337,30 @@ namespace PhotoMove
                 // Check for cancellation
                 cancellationTokenSource.Token.ThrowIfCancellationRequested();
 
+                // increase count
                 totalCount++;
+
+                // new scan file
+                ScanFile fileInfo = new ScanFile();
+
+                // read general info
+                fileInfo.filePath = file;
+                fileInfo.fileName = Path.GetFileName(file);
+                fileInfo.fileExtension = Path.GetExtension(file);
 
                 try
                 {
                     var directories = ImageMetadataReader.ReadMetadata(file);
                     var Ifd0Directory = directories.OfType<ExifIfd0Directory>().FirstOrDefault();
+                    //var metadataDirectory = directories.OfType<FileMetadataDirectory>().FirstOrDefault();
 
                     if (Ifd0Directory != null)
+                    //if (metadataDirectory != null)
+                    //if (HasExifData(fileInfo.filePath))
+                    //if (HasExifData(directories))
                     {
                         // This file contains EXIF data
+                        fileInfo.isValidExif = true;
                         exifFileCount++;
                         lblContainEXIF.Invoke((MethodInvoker)delegate
                         {
@@ -309,12 +368,40 @@ namespace PhotoMove
                         });
 
                         // Try to get the "Date Taken" property
-                        var originalDate = Ifd0Directory?.GetDescription(ExifIfd0Directory.TagDateTime);
-                        if (originalDate != null)
+                        //var originalDate = Ifd0Directory?.GetDescription(ExifDirectoryBase.TagDateTime);
+                        //var originalDate2 = directories.OfType<ExifSubIfdDirectory>().FirstOrDefault()?
+                        //                        .GetDescription(ExifDirectoryBase.TagDateTimeOriginal);
+
+                        //var originDate = originalDate ?? originalDate2;
+                        //DateTime? takenDate = GetValidDateTime(originDate) ?? null;
+
+                        // read EXIF info
+                        ReadExifInfo(directories, fileInfo);
+                        //ReadExifInfo(Ifd0Directory, fileInfo);
+
+                        var originDate = fileInfo.ExifSubIfdDirectory_takenDate
+                                            ?? fileInfo.ExifIfd0Directory_takenDate
+                                            //?? fileInfo.ExifThumbnailDirectory_takenDate
+                                            ;
+                        DateTime? takenDate = GetValidDateTime(originDate) ?? null;
+
+                        //DateTime? takenDate = GetValidDateTime(fileInfo.ExifIfd0Directory_takenDate) ?? null;
+
+                        if (takenDate != null)
                         {
                             // This photo has a valid date
+                            fileInfo.isValidTakenDate = true;
                             validDateCount++;
-                            filesWithValidExifDates.Add(file);
+
+                            //fileInfo.takenDate = (DateTime)Ifd0Directory?.GetDateTime(ExifDirectoryBase.TagDateTime);
+                            //fileInfo.takenDate = (DateTime)directories.OfType<ExifSubIfdDirectory>().FirstOrDefault()?
+                            //                        .GetDateTime(ExifDirectoryBase.TagDateTimeOriginal);
+
+                            fileInfo.takenDate = (DateTime)takenDate;
+
+                            //fileInfo.cameraModel = Ifd0Directory?.GetDescription(ExifDirectoryBase.TagModel) ?? string.Empty;
+                            //fileInfo.cameraModel = directories.OfType<ExifIfd0Directory>().FirstOrDefault()?
+                            //                            .GetDescription(ExifDirectoryBase.TagModel) ?? string.Empty;
 
                             lblHaveValidDate.Invoke((MethodInvoker)delegate
                             {
@@ -325,7 +412,6 @@ namespace PhotoMove
                         {
                             // This photo has EXIF data but no valid date
                             noValidDateCount++;
-                            filesWithInvalidExifDates.Add(file);
 
                             lblHaveExifButNoValidDate.Invoke((MethodInvoker)delegate
                             {
@@ -337,19 +423,11 @@ namespace PhotoMove
                         {
                             lblFindingFilesWithExif.Text = file;
                         });
-
-                        // Try to get the "Camera model" property
-                        var cameraModel = Ifd0Directory?.GetDescription(ExifIfd0Directory.TagModel);
-                        if (cameraModel != null)
-                            listCameraModel.Add(cameraModel);
-                        else
-                            listCameraModel.Add(noModelInfo);
                     }
                     else
                     {
                         // empty EXIF
                         noValidDateCount++;
-                        filesWithInvalidExifDates.Add(file);
 
                         lblHaveExifButNoValidDate.Invoke((MethodInvoker)delegate
                         {
@@ -361,12 +439,19 @@ namespace PhotoMove
                 {
                     // This file does not contain EXIF data or could not be processed
                     noValidDateCount++;
-                    filesWithInvalidExifDates.Add(file);
 
                     lblHaveExifButNoValidDate.Invoke((MethodInvoker)delegate
                     {
                         lblHaveExifButNoValidDate.Text = noValidDateCount.ToString();
                     });
+                }
+                catch (Exception)
+                { 
+                    // continue
+                }
+                finally
+                {
+                    scanFiles.Add(fileInfo);
                 }
 
                 lblTotalFiles.Invoke((MethodInvoker)delegate
@@ -393,110 +478,31 @@ namespace PhotoMove
                 tabFileOptions.Visible = true;
             });
 
-            var validFileTypeCounts = filesWithValidExifDates
-                    .GroupBy(file => Path.GetExtension(file))
-                    .Select(group => new { FileType = group.Key, Count = group.Count() })
-                    .OrderByDescending(x => x.Count);
-
-
-            foreach (var fileTypeCount in validFileTypeCounts.OrderBy(x=> x.FileType))
-            {
-                clbFilesWithValidExifDates.Invoke((MethodInvoker)delegate
-                {
-                    clbFilesWithValidExifDates.Items.Add($"{fileTypeCount.FileType} ({fileTypeCount.Count})", true);
-                });
-
-                // Update the status strip
-                toolStripStatusLabel1.Text = $"Time: {stopwatch.Elapsed.TotalSeconds} seconds elapsed.";
-                statusStrip1.Invoke((MethodInvoker)delegate
-                {
-                    statusStrip1.Refresh();
-                });
-            }
-
-            var invalidFileTypeCounts = filesWithInvalidExifDates
-                    .GroupBy(file => Path.GetExtension(file))
-                    .Select(group => new { FileType = group.Key, Count = group.Count() })
-                    .OrderByDescending(x => x.Count);
-
-            foreach (var fileTypeCount in invalidFileTypeCounts.OrderBy(x => x.FileType))
-            {
-                clbFilesWithoutValidExifDates.Invoke((MethodInvoker)delegate
-                {
-                    clbFilesWithoutValidExifDates.Items.Add($"{fileTypeCount.FileType} ({fileTypeCount.Count})", true);
-                });
-
-                // Update the status strip
-                toolStripStatusLabel1.Text = $"Time: {stopwatch.Elapsed.TotalSeconds} seconds elapsed.";
-                statusStrip1.Invoke((MethodInvoker)delegate
-                {
-                    statusStrip1.Refresh();
-                });
-            }
-
-            var validCameraModels = listCameraModel
-                    .Where(x => !x.Equals(noModelInfo))
-                    .GroupBy(file => file)
-                    .Select(group => new { FileType = group.Key, Count = group.Count() })
-                    .OrderByDescending(x => x.Count);
-
-            foreach (var eachCameraModel in validCameraModels.OrderBy(x => x.FileType))
-            {
-                clbCameraModelsWithValidExifDates.Invoke((MethodInvoker)delegate
-                {
-                    clbCameraModelsWithValidExifDates.Items.Add($"{eachCameraModel.FileType} ({eachCameraModel.Count})", true);
-                });
-
-                // Update the status strip
-                toolStripStatusLabel1.Text = $"Time: {stopwatch.Elapsed.TotalSeconds} seconds elapsed.";
-                statusStrip1.Invoke((MethodInvoker)delegate
-                {
-                    statusStrip1.Refresh();
-                });
-            }
-
-            var invalidCameraModels = listCameraModel
-                    .Where(x => x.Equals(noModelInfo))
-                    .GroupBy(file => file)
-                    .Select(group => new { FileType = group.Key, Count = group.Count() })
-                    .OrderByDescending(x => x.Count);
-
-            foreach (var eachCameraModel in invalidCameraModels)
-            {
-                clbCameraModelsWithValidExifDates.Invoke((MethodInvoker)delegate
-                {
-                    clbCameraModelsWithoutValidExifDates.Items.Add($"{eachCameraModel.FileType} ({eachCameraModel.Count})", true);
-                });
-
-                // Update the status strip
-                toolStripStatusLabel1.Text = $"Time: {stopwatch.Elapsed.TotalSeconds} seconds elapsed.";
-                statusStrip1.Invoke((MethodInvoker)delegate
-                {
-                    statusStrip1.Refresh();
-                });
-            }
-
+            RefreshFileTypesTab();
+            RefreshCameraModelsTab();
 
             stopwatch.Stop();
         }
 
+        
+
         private void CopyOrMoveFiles()
         {
-            //string sourceFolderPath = txtPhotoFolder.Text;
-            string destinationFolderPath = txtDestinationFolder.Text;
-            string duplicatesFolderPath = txtDuplicatesFolderPath.Text;
-
             int fileCount = 0;
 
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            //var files = System.IO.Directory.GetFiles(sourceFolderPath, "*.*", SearchOption.AllDirectories);
+            var filteredFiles = scanFiles.Where(x => userOptions.selectedFileTypes.Contains(x?.fileExtension ?? string.Empty)
+                                                  && userOptions.selectedCameraModels.Contains(x?.cameraModel ?? string.Empty)
+                                                  //&& x.isValidExif
+                                                  //&& x.isValidTakenDate
+                                                  );
 
             pgbCopyingOrMovingFiles.Invoke((MethodInvoker)delegate
             {
                 pgbCopyingOrMovingFiles.Minimum = 1;
-                pgbCopyingOrMovingFiles.Maximum = filesWithValidExifDates.Count();
+                pgbCopyingOrMovingFiles.Maximum = filteredFiles.Count();
                 pgbCopyingOrMovingFiles.Value = 1;
                 pgbCopyingOrMovingFiles.Step = 1;
             });
@@ -510,117 +516,72 @@ namespace PhotoMove
                 lblCopyingProgress.Text = "Files Copied - File Operation currently in progress";
             }));
 
-            foreach (var file in filesWithValidExifDates)
+            foreach (var file in filteredFiles)
             {
                 // Check for cancellation
                 cancellationTokenSource.Token.ThrowIfCancellationRequested();
 
                 try
                 {
-                    var directories = ImageMetadataReader.ReadMetadata(file);
+                    // This photo has a valid date
+                    string newFolderPath = GenerateFolder(file, userOptions.selectedDestinationFolder);
+                    System.IO.Directory.CreateDirectory(newFolderPath);
 
-                    var Ifd0Directory = directories.OfType<ExifIfd0Directory>().FirstOrDefault();
-                    var dateTaken = Ifd0Directory?.GetDateTime(ExifIfd0Directory.TagDateTime) ?? null;
+                    // Copy the file to the new directory
+                    string newFilePath = Path.Combine(newFolderPath, file.fileName);
 
-                    if (Ifd0Directory != null && dateTaken != null)
+                    bool isCopied = false;
+
+                    // check if the copying file exists in the destination folder
+                    if (!IsDuplicateFile(newFilePath, file.filePath))
                     {
-                        // This photo has a valid date
-                        string year = dateTaken.Value.Year.ToString();
-                        string month = dateTaken.Value.ToString("MM");
-                        string day = dateTaken.Value.ToString("dd");
-
-                        string newFolderPath = string.Empty;
-
-                        // Create the YMD (Single Folder) folders
-                        if (PhotoMoveSettings.Default.selectedOutputFolderStructure == 0)
+                        File.Copy(file.filePath, newFilePath);
+                        isCopied = true;
+                    }
+                    else
+                    {
+                        switch (PhotoMoveSettings.Default.selectedCopyMoveExistedFiles)
                         {
-                            newFolderPath = Path.Combine(destinationFolderPath, $"{year}{month}{day}");
-                        }
-                        // Create the year, month, day folders
-                        else if (PhotoMoveSettings.Default.selectedOutputFolderStructure == 1)
-                        {
-                            newFolderPath = Path.Combine(destinationFolderPath, year, $"{year}_{month}", $"{year}_{month}_{day}");
-                        }
-                        // Create the year, month folders
-                        else if (PhotoMoveSettings.Default.selectedOutputFolderStructure == 2)
-                        {
-                            newFolderPath = Path.Combine(destinationFolderPath, year, $"{year}_{month}");
-                        }
+                            case 0:
+                                // Do Not Move or Copy
+                                break;
+                            case 1:
+                                // Add '-Copy###'. then Move or Copy
+                                string newFileName = GenerateUniqueCopyName(newFilePath);
+                                File.Copy(file.filePath, Path.Combine(Path.GetDirectoryName(newFilePath) ?? string.Empty, newFileName));
+                                isCopied = true;
+                                break;
+                            case 2:
+                                // Overwrite the Existing File
+                                File.Copy(file.filePath, newFilePath, true);
+                                isCopied = true;
+                                break;
+                            case 3:
+                                // Move to specified Duplicates Folder:
+                                if (!string.IsNullOrEmpty(userOptions.selectedDuplicatesFolder))
+                                {
+                                    string newNewFolderPath = GenerateFolder(file, userOptions.selectedDuplicatesFolder);
 
-                        System.IO.Directory.CreateDirectory(newFolderPath);
+                                    System.IO.Directory.CreateDirectory(newNewFolderPath);
+                                    string newNewFilePath = Path.Combine(newNewFolderPath, Path.GetFileName(file.filePath));
 
-                        // Copy the file to the new directory
-                        string newFilePath = Path.Combine(newFolderPath, Path.GetFileName(file));
-
-                        bool isCopied = false;
-
-                        // check if the copying file exists in the destination folder
-                        if (!IsDuplicateFile(newFilePath, file))
-                        {
-                            File.Copy(file, newFilePath);
-                            isCopied = true;
-                        }
-                        else
-                        {
-                            switch (PhotoMoveSettings.Default.selectedCopyMoveExistedFiles)
-                            {
-                                case 0:
-                                    // Do Not Move or Copy
-                                    break;
-                                case 1:
-                                    // Add '-Copy###'. then Move or Copy
-                                    string newFileName = GenerateUniqueCopyName(newFilePath);
-                                    File.Copy(file, Path.Combine(Path.GetDirectoryName(newFilePath), newFileName));
+                                    File.Copy(file.filePath, Path.Combine(newNewFolderPath, Path.GetFileName(newNewFilePath)));
                                     isCopied = true;
-                                    break;
-                                case 2:
-                                    // Overwrite the Existing File
-                                    File.Copy(file, newFilePath, true);
-                                    isCopied = true;
-                                    break;
-                                case 3:
-                                    // Move to specified Duplicates Folder:
-                                    if (!string.IsNullOrEmpty(duplicatesFolderPath))
-                                    {
-                                        string newNewFolderPath = string.Empty;
-
-                                        // Create the YMD (Single Folder) folders
-                                        if (PhotoMoveSettings.Default.selectedOutputFolderStructure == 0)
-                                        {
-                                            newNewFolderPath = Path.Combine(duplicatesFolderPath, $"{year}{month}{day}");
-                                        }
-                                        // Create the year, month, day folders
-                                        else if (PhotoMoveSettings.Default.selectedOutputFolderStructure == 1)
-                                        {
-                                            newNewFolderPath = Path.Combine(duplicatesFolderPath, year, $"{year}_{month}", $"{year}_{month}_{day}");
-                                        }
-                                        // Create the year, month folders
-                                        else if (PhotoMoveSettings.Default.selectedOutputFolderStructure == 2)
-                                        {
-                                            newNewFolderPath = Path.Combine(duplicatesFolderPath, year, $"{year}_{month}");
-                                        }
-
-                                        System.IO.Directory.CreateDirectory(newNewFolderPath);
-                                        string newNewFilePath = Path.Combine(newNewFolderPath, Path.GetFileName(file));
-
-                                        File.Copy(file, Path.Combine(newNewFolderPath, Path.GetFileName(newNewFilePath)));
-                                        isCopied = true;
-                                    }
-                                    break;
-                                default:
-                                    break;
-                            }
+                                }
+                                break;
+                            default:
+                                break;
                         }
+                    }
 
-                        if (isCopied)
+                    if (isCopied)
+                    {
+                        // Update the TextBox with the number of files copied
+                        fileCount++;
+                        lblCopyingFiles.Invoke((MethodInvoker)delegate
                         {
-                            // Update the TextBox with the number of files copied
-                            fileCount++;
-                            lblCopyingFiles.Invoke((MethodInvoker)delegate
-                            {
-                                lblCopyingFiles.Text = fileCount.ToString();
-                            });
-                        }
+                            lblCopyingFiles.Text = fileCount.ToString();
+                        });
                     }
 
                     // Perform the increment on the ProgressBar.
@@ -628,8 +589,6 @@ namespace PhotoMove
                     {
                         pgbCopyingOrMovingFiles.PerformStep();
                     });
-
-
                 }
                 catch (ImageProcessingException)
                 {
@@ -651,7 +610,178 @@ namespace PhotoMove
                 lblCopyingProgress.BackColor = DefaultBackColor;
                 lblCopyingProgress.Text = "Copy Operation Completed Successfully";
             }));
+
             stopwatch.Stop();
+        }
+
+        private void RefreshFileTypesTab()
+        {
+            var validFileTypeCounts = scanFiles.Where(x => x.isValidExif && x.isValidTakenDate)
+                    .GroupBy(file => file.fileExtension)
+                    .Select(group => new { FileType = group.Key, Count = group.Count() })
+                    .OrderBy(x => x.FileType);
+
+            int index = 0;
+            foreach (var fileTypeCount in validFileTypeCounts.OrderBy(x => x.FileType))
+            {
+                lvFilesWithValidExifDates.Invoke((MethodInvoker)delegate
+                {
+                    ListViewItem item = new($"{fileTypeCount.FileType}", index);
+                    item.Checked = true;
+                    item.SubItems.Add($"{fileTypeCount.Count}");
+                    lvFilesWithValidExifDates.Items.Add(item);
+                });
+
+                index++;
+            }
+
+            var invalidFileTypeCounts = scanFiles.Where(x => !x.isValidExif || !x.isValidTakenDate)
+                    .GroupBy(file => file.fileExtension)
+                    .Select(group => new { FileType = group.Key, Count = group.Count() })
+                    .OrderBy(x => x.FileType);
+
+            index = 0;
+            foreach (var fileTypeCount in invalidFileTypeCounts.OrderBy(x => x.FileType))
+            {
+                lvFilesWithoutValidExifDates.Invoke((MethodInvoker)delegate
+                {
+                    ListViewItem item = new($"{fileTypeCount.FileType}", index);
+                    item.Checked = true;
+                    item.SubItems.Add($"{fileTypeCount.Count}");
+                    lvFilesWithoutValidExifDates.Items.Add(item);
+                });
+
+                index++;
+            }
+        }
+
+        private void RefreshCameraModelsTab()
+        {
+            var validCameraModels = scanFiles
+                    .Where(x => !string.IsNullOrEmpty(x.cameraModel))
+                    .GroupBy(file => file.cameraModel)
+                    .Select(group => new { CameraModel = group.Key, Count = group.Count() })
+                    .OrderBy(x => x.CameraModel);
+
+            int index = 0;
+            foreach (var eachCameraModel in validCameraModels.OrderBy(x => x.CameraModel))
+            {
+                lvCameraModelsWithValidExifDates.Invoke((MethodInvoker)delegate
+                {
+                    ListViewItem item = new($"{eachCameraModel.CameraModel}", index);
+                    item.Checked = true;
+                    item.SubItems.Add($"{eachCameraModel.Count}");
+                    lvCameraModelsWithValidExifDates.Items.Add(item);
+                });
+
+                index++;
+            }
+
+            var invalidCameraModels = scanFiles
+                    .Where(x => string.IsNullOrEmpty(x.cameraModel))
+                    .GroupBy(file => file.cameraModel)
+                    .Select(group => new { CameraModel = group.Key, Count = group.Count() })
+                    .OrderBy(x => x.CameraModel);
+
+            index = 0;
+            foreach (var eachCameraModel in invalidCameraModels)
+            {
+                lvCameraModelsWithoutValidExifDates.Invoke((MethodInvoker)delegate
+                {
+                    ListViewItem item = new(noModelInfo, index);
+                    item.Checked = true;
+                    item.SubItems.Add($"{eachCameraModel.Count}");
+                    lvCameraModelsWithoutValidExifDates.Items.Add(item);
+                });
+
+                index++;
+            }
+        }
+
+        private DateTime? GetValidDateTime(string input)
+        {
+            DateTime temp;
+            string[] formats =
+            {
+                "dd/MM/yyyy HH:mm:ss", "dd-MM-yyyy HH:mm:ss", "dd.MM.yyyy HH:mm:ss", "dd MM yyyy HH:mm:ss", // DMY formats
+                "yyyy/MM/dd HH:mm:ss", "yyyy-MM-dd HH:mm:ss", "yyyy.MM.dd HH:mm:ss", "yyyy MM dd HH:mm:ss", // YMD formats
+                "MM/dd/yyyy HH:mm:ss", "MM-dd-yyyy HH:mm:ss", "MM.dd.yyyy HH:mm:ss", "MM dd yyyy HH:mm:ss", // MDY formats
+                "yyyy:MM:dd HH:mm:ss" // ISO 8601 format
+            };
+
+            if (DateTime.TryParseExact(input, formats, null, System.Globalization.DateTimeStyles.None, out temp))
+                return temp;
+            else
+                return null;
+        }
+
+        private void ReadExifInfo(ExifIfd0Directory exifIfd0Directory, ScanFile fileInfo)
+        {
+            if (exifIfd0Directory != null)
+            {
+                if (exifIfd0Directory.ContainsTag(ExifDirectoryBase.TagDateTime))
+                {
+                    fileInfo.ExifIfd0Directory_takenDate = exifIfd0Directory?.GetDescription(ExifDirectoryBase.TagDateTime);
+                }
+
+                if (exifIfd0Directory.ContainsTag(ExifDirectoryBase.TagModel))
+                {
+                    fileInfo.ExifIfd0Directory_cameraModel = exifIfd0Directory?.GetDescription(ExifDirectoryBase.TagModel);
+                    fileInfo.cameraModel = fileInfo.ExifIfd0Directory_cameraModel;
+                }
+            }
+        }
+
+        private void ReadExifInfo(IReadOnlyList<MetadataExtractor.Directory> directories, ScanFile fileInfo)
+        {
+            var exifSubIfdDirectory = directories.OfType<ExifSubIfdDirectory>().FirstOrDefault();
+            if (exifSubIfdDirectory != null)
+            {
+                if (exifSubIfdDirectory.ContainsTag(ExifDirectoryBase.TagDateTimeOriginal))
+                {
+                    fileInfo.ExifSubIfdDirectory_takenDate = exifSubIfdDirectory?.GetDescription(ExifDirectoryBase.TagDateTimeOriginal);
+                }
+
+                //if (exifSubIfdDirectory.ContainsTag(ExifDirectoryBase.TagModel))
+                //{
+                //    fileInfo.ExifSubIfdDirectory_cameraModel = exifSubIfdDirectory?.GetDescription(ExifDirectoryBase.TagModel);
+                //}
+
+            }
+
+            var exifIfd0Directory = directories.OfType<ExifIfd0Directory>().FirstOrDefault();
+            if (exifIfd0Directory != null)
+            {
+                if (exifIfd0Directory.ContainsTag(ExifDirectoryBase.TagDateTime))
+                {
+                    fileInfo.ExifIfd0Directory_takenDate = exifIfd0Directory?.GetDescription(ExifDirectoryBase.TagDateTime);
+                }
+
+                if (exifIfd0Directory.ContainsTag(ExifDirectoryBase.TagModel))
+                {
+                    fileInfo.ExifIfd0Directory_cameraModel = exifIfd0Directory?.GetDescription(ExifDirectoryBase.TagModel);
+                    fileInfo.cameraModel = fileInfo.ExifIfd0Directory_cameraModel;
+                }
+            }
+
+            //var exifThumbnailDirectory = directories.OfType<ExifThumbnailDirectory>().FirstOrDefault();
+            //if (exifThumbnailDirectory != null && exifThumbnailDirectory.ContainsTag(ExifDirectoryBase.TagDateTime))
+            //{
+            //    if (exifThumbnailDirectory.ContainsTag(ExifDirectoryBase.TagDateTime))
+            //    {
+            //        fileInfo.ExifThumbnailDirectory_takenDate = exifThumbnailDirectory?.GetDescription(ExifDirectoryBase.TagDateTime);
+            //    }
+
+            //    if (exifThumbnailDirectory.ContainsTag(ExifDirectoryBase.TagModel))
+            //    {
+            //        fileInfo.ExifThumbnailDirectory_cameraModel = exifThumbnailDirectory?.GetDescription(ExifDirectoryBase.TagModel);
+            //    }
+            //}
+
+            //fileInfo.cameraModel = fileInfo.ExifSubIfdDirectory_cameraModel
+            //                            ?? fileInfo.ExifIfd0Directory_cameraModel
+            //                            ?? fileInfo.ExifThumbnailDirectory_cameraModel
+            //                            ;
         }
 
         private void ResetFindFilesStatistics()
@@ -660,10 +790,105 @@ namespace PhotoMove
             lblContainEXIF.Text = 0.ToString();
             lblHaveValidDate.Text = 0.ToString();
             lblHaveExifButNoValidDate.Text = 0.ToString();
-            clbFilesWithValidExifDates.Items.Clear();
-            clbFilesWithoutValidExifDates.Items.Clear();
-            clbCameraModelsWithValidExifDates.Items.Clear();
-            clbCameraModelsWithoutValidExifDates.Items.Clear();
+            lvFilesWithValidExifDates.Items.Clear();
+            lvFilesWithoutValidExifDates.Items.Clear();
+            lvCameraModelsWithValidExifDates.Items.Clear();
+            lvCameraModelsWithoutValidExifDates.Items.Clear();
+        }
+
+        private void GetUserOptions()
+        {
+            userOptions.selectedFolderWithPhotosToProcess = txtPhotoFolder.Text;
+            userOptions.selectedDestinationFolder = txtDestinationFolder.Text;
+            userOptions.selectedHowFolderAreStructured = cmbOutputFolderStructure.SelectedIndex;
+            userOptions.selectedHowFilesAreDuplicates = (radFileNamesMatch.Checked) ? 0 : 1;
+            userOptions.selectedHowToMoveOrCopyExistedFilesInTheDestinationFolder = cmbCopyMoveExistedFiles.SelectedIndex;
+            userOptions.selectedDuplicatesFolder = txtDuplicatesFolderPath.Text;
+            userOptions.checkedUseFileDateToMoveOrCopyToStructureFolder = chkUseFileDateToCopyOrMove.Checked;
+            userOptions.checkedCopyOrMoveFilesWithNoExifDateCreatedToThisFolder = chkCopyOrMoveToThisFolder.Checked;
+            userOptions.selectedFolderForFilesWithNoExifDateCreated = txtFolderForFilesWithNoExif.Text;
+
+            // reset
+            userOptions.selectedFileTypes.Clear();
+            userOptions.selectedCameraModels.Clear();
+
+            // add
+            foreach (ListViewItem item in lvFilesWithValidExifDates.CheckedItems)
+            {
+                userOptions.selectedFileTypes.Add(item?.SubItems[0].Text ?? string.Empty);
+            }
+
+            foreach (ListViewItem item in lvCameraModelsWithValidExifDates.CheckedItems)
+            {
+                userOptions.selectedCameraModels.Add(item?.SubItems[0].Text ?? string.Empty);
+            }
+
+            // remove empty values
+            userOptions.selectedFileTypes.RemoveAll(string.IsNullOrEmpty);
+            userOptions.selectedCameraModels.RemoveAll(string.IsNullOrEmpty);
+
+            userOptions.checkedUseDashesInFolderNames = chkUseDashesInFolderName.Checked;
+            userOptions.checkedNoSeperator = chkNoSeperator.Checked;
+        }
+
+        private void InitListViews()
+        {
+            lvFilesWithValidExifDates.Columns.Add("File Type", -2, HorizontalAlignment.Left);
+            lvFilesWithValidExifDates.Columns.Add("Count", -2, HorizontalAlignment.Left);
+
+            lvFilesWithoutValidExifDates.Columns.Add("File Type", -2, HorizontalAlignment.Left);
+            lvFilesWithoutValidExifDates.Columns.Add("Count", -2, HorizontalAlignment.Left);
+
+            lvCameraModelsWithValidExifDates.Columns.Add("Camera Model", -2, HorizontalAlignment.Left);
+            lvCameraModelsWithValidExifDates.Columns.Add("Count", -2, HorizontalAlignment.Left);
+
+            lvCameraModelsWithoutValidExifDates.Columns.Add("Camera Model", -2, HorizontalAlignment.Left);
+            lvCameraModelsWithoutValidExifDates.Columns.Add("Count", -2, HorizontalAlignment.Left);
+        }
+
+        private string GenerateFolder(ScanFile file, string folderPath)
+        {
+            //string destinationFolderPath = txtDestinationFolder.Text;
+            string newFolderPath = string.Empty;
+            string year = file.takenDate.Year.ToString();
+            string month = file.takenDate.ToString("MM");
+            string day = file.takenDate.ToString("dd");
+
+            // Create the YMD (Single Folder) folders
+            if (PhotoMoveSettings.Default.selectedOutputFolderStructure == 0)
+            {
+                newFolderPath = Path.Combine(folderPath, $"{year}{month}{day}");
+            }
+            // Create the year, month, day folders
+            else if (PhotoMoveSettings.Default.selectedOutputFolderStructure == 1)
+            {
+                newFolderPath = Path.Combine(folderPath, year, $"{year}_{month}", $"{year}_{month}_{day}");
+            }
+            // Create the year, month folders
+            else if (PhotoMoveSettings.Default.selectedOutputFolderStructure == 2)
+            {
+                newFolderPath = Path.Combine(folderPath, year, $"{year}_{month}");
+            }
+
+            return newFolderPath;
+
+        }
+
+        //private bool HasExifData(string filePath)
+        private bool HasExifData(IReadOnlyList<MetadataExtractor.Directory> directories)
+        {
+            //var directories = ImageMetadataReader.ReadMetadata(filePath);
+
+            // Check if any of the directories is an Exif directory
+            foreach (var directory in directories)
+            {
+                if (directory is ExifSubIfdDirectory || directory is ExifIfd0Directory || directory is ExifThumbnailDirectory)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         #endregion

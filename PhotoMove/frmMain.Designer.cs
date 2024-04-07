@@ -54,6 +54,7 @@ namespace PhotoMove
             lblTotalFiles = new Label();
             btnFindPhotos = new Button();
             grbCopyOrMove = new GroupBox();
+            btnShowListScanFiles = new Button();
             grbCancel = new GroupBox();
             pgbCopyingOrMovingFiles = new ProgressBar();
             btnCancelCopyingOrMoving = new Button();
@@ -66,7 +67,7 @@ namespace PhotoMove
             btnCopyToDestinationFolders = new Button();
             groupBox5 = new GroupBox();
             cmbOutputFolderStructure = new ComboBox();
-            groupBox6 = new GroupBox();
+            grbHowFilesAreDuplicates = new GroupBox();
             radAllExifAndExactFileContentsMatch = new RadioButton();
             radFileNamesMatch = new RadioButton();
             groupBox7 = new GroupBox();
@@ -76,28 +77,30 @@ namespace PhotoMove
             label1 = new Label();
             cmbCopyMoveExistedFiles = new ComboBox();
             groupBox8 = new GroupBox();
-            button2 = new Button();
-            textBox2 = new TextBox();
-            checkBox2 = new CheckBox();
-            checkBox1 = new CheckBox();
+            btnChooseFolderForFilesWithNoExif = new Button();
+            txtFolderForFilesWithNoExif = new TextBox();
+            chkCopyOrMoveToThisFolder = new CheckBox();
+            chkUseFileDateToCopyOrMove = new CheckBox();
             tabFileOptions = new TabControl();
             tabPage1 = new TabPage();
+            btnUncheckAllFileTypes = new Button();
             splitContainer1 = new SplitContainer();
-            clbFilesWithValidExifDates = new CheckedListBox();
+            lvFilesWithValidExifDates = new ListView();
             label6 = new Label();
-            clbFilesWithoutValidExifDates = new CheckedListBox();
+            lvFilesWithoutValidExifDates = new ListView();
             label7 = new Label();
             label2 = new Label();
             tabPage2 = new TabPage();
+            btnUncheckAllCameraModel = new Button();
             splitContainer2 = new SplitContainer();
-            clbCameraModelsWithValidExifDates = new CheckedListBox();
+            lvCameraModelsWithValidExifDates = new ListView();
             label5 = new Label();
-            clbCameraModelsWithoutValidExifDates = new CheckedListBox();
+            lvCameraModelsWithoutValidExifDates = new ListView();
             label8 = new Label();
             label3 = new Label();
             tabPage3 = new TabPage();
-            checkBox4 = new CheckBox();
-            checkBox3 = new CheckBox();
+            chkNoSeperator = new CheckBox();
+            chkUseDashesInFolderName = new CheckBox();
             menuStrip1 = new MenuStrip();
             fileToolStripMenuItem = new ToolStripMenuItem();
             exitToolStripMenuItem = new ToolStripMenuItem();
@@ -113,7 +116,7 @@ namespace PhotoMove
             grbCancel.SuspendLayout();
             grbProgress.SuspendLayout();
             groupBox5.SuspendLayout();
-            groupBox6.SuspendLayout();
+            grbHowFilesAreDuplicates.SuspendLayout();
             groupBox7.SuspendLayout();
             grbDuplicatesFolder.SuspendLayout();
             groupBox8.SuspendLayout();
@@ -366,6 +369,7 @@ namespace PhotoMove
             // 
             // grbCopyOrMove
             // 
+            grbCopyOrMove.Controls.Add(btnShowListScanFiles);
             grbCopyOrMove.Controls.Add(grbCancel);
             grbCopyOrMove.Controls.Add(grbProgress);
             grbCopyOrMove.Controls.Add(chkAlwaysShowSummaryReport);
@@ -375,10 +379,20 @@ namespace PhotoMove
             grbCopyOrMove.Enabled = false;
             grbCopyOrMove.Location = new Point(12, 493);
             grbCopyOrMove.Name = "grbCopyOrMove";
-            grbCopyOrMove.Size = new Size(538, 172);
+            grbCopyOrMove.Size = new Size(538, 200);
             grbCopyOrMove.TabIndex = 3;
             grbCopyOrMove.TabStop = false;
             grbCopyOrMove.Text = "Step 4: Copy or Move Photos to Date Sorted Folders";
+            // 
+            // btnShowListScanFiles
+            // 
+            btnShowListScanFiles.Location = new Point(6, 173);
+            btnShowListScanFiles.Name = "btnShowListScanFiles";
+            btnShowListScanFiles.Size = new Size(208, 23);
+            btnShowListScanFiles.TabIndex = 6;
+            btnShowListScanFiles.Text = "Show Scan Files";
+            btnShowListScanFiles.UseVisualStyleBackColor = true;
+            btnShowListScanFiles.Click += btnShowListScanFiles_Click;
             // 
             // grbCancel
             // 
@@ -496,16 +510,16 @@ namespace PhotoMove
             cmbOutputFolderStructure.TabIndex = 1;
             cmbOutputFolderStructure.SelectedIndexChanged += cmbOutputFolderStructure_SelectedIndexChanged;
             // 
-            // groupBox6
+            // grbHowFilesAreDuplicates
             // 
-            groupBox6.Controls.Add(radAllExifAndExactFileContentsMatch);
-            groupBox6.Controls.Add(radFileNamesMatch);
-            groupBox6.Location = new Point(592, 89);
-            groupBox6.Name = "groupBox6";
-            groupBox6.Size = new Size(415, 74);
-            groupBox6.TabIndex = 5;
-            groupBox6.TabStop = false;
-            groupBox6.Text = "Files are Duplicates If:";
+            grbHowFilesAreDuplicates.Controls.Add(radAllExifAndExactFileContentsMatch);
+            grbHowFilesAreDuplicates.Controls.Add(radFileNamesMatch);
+            grbHowFilesAreDuplicates.Location = new Point(592, 89);
+            grbHowFilesAreDuplicates.Name = "grbHowFilesAreDuplicates";
+            grbHowFilesAreDuplicates.Size = new Size(415, 74);
+            grbHowFilesAreDuplicates.TabIndex = 5;
+            grbHowFilesAreDuplicates.TabStop = false;
+            grbHowFilesAreDuplicates.Text = "Files are Duplicates If:";
             // 
             // radAllExifAndExactFileContentsMatch
             // 
@@ -592,10 +606,10 @@ namespace PhotoMove
             // 
             // groupBox8
             // 
-            groupBox8.Controls.Add(button2);
-            groupBox8.Controls.Add(textBox2);
-            groupBox8.Controls.Add(checkBox2);
-            groupBox8.Controls.Add(checkBox1);
+            groupBox8.Controls.Add(btnChooseFolderForFilesWithNoExif);
+            groupBox8.Controls.Add(txtFolderForFilesWithNoExif);
+            groupBox8.Controls.Add(chkCopyOrMoveToThisFolder);
+            groupBox8.Controls.Add(chkUseFileDateToCopyOrMove);
             groupBox8.Location = new Point(592, 282);
             groupBox8.Name = "groupBox8";
             groupBox8.Size = new Size(415, 100);
@@ -603,45 +617,46 @@ namespace PhotoMove
             groupBox8.TabStop = false;
             groupBox8.Text = "Option for Files with No Exif Date Created:";
             // 
-            // button2
+            // btnChooseFolderForFilesWithNoExif
             // 
-            button2.Location = new Point(373, 68);
-            button2.Name = "button2";
-            button2.Size = new Size(30, 23);
-            button2.TabIndex = 3;
-            button2.Text = ">";
-            button2.UseVisualStyleBackColor = true;
+            btnChooseFolderForFilesWithNoExif.Location = new Point(373, 68);
+            btnChooseFolderForFilesWithNoExif.Name = "btnChooseFolderForFilesWithNoExif";
+            btnChooseFolderForFilesWithNoExif.Size = new Size(30, 23);
+            btnChooseFolderForFilesWithNoExif.TabIndex = 3;
+            btnChooseFolderForFilesWithNoExif.Text = ">";
+            btnChooseFolderForFilesWithNoExif.UseVisualStyleBackColor = true;
+            btnChooseFolderForFilesWithNoExif.Click += btnChooseFolderForFilesWithNoExif_Click;
             // 
-            // textBox2
+            // txtFolderForFilesWithNoExif
             // 
-            textBox2.BackColor = Color.White;
-            textBox2.Location = new Point(35, 69);
-            textBox2.Name = "textBox2";
-            textBox2.ReadOnly = true;
-            textBox2.Size = new Size(332, 23);
-            textBox2.TabIndex = 2;
+            txtFolderForFilesWithNoExif.BackColor = Color.White;
+            txtFolderForFilesWithNoExif.Location = new Point(35, 69);
+            txtFolderForFilesWithNoExif.Name = "txtFolderForFilesWithNoExif";
+            txtFolderForFilesWithNoExif.ReadOnly = true;
+            txtFolderForFilesWithNoExif.Size = new Size(332, 23);
+            txtFolderForFilesWithNoExif.TabIndex = 2;
             // 
-            // checkBox2
+            // chkCopyOrMoveToThisFolder
             // 
-            checkBox2.AutoSize = true;
-            checkBox2.Checked = true;
-            checkBox2.CheckState = CheckState.Checked;
-            checkBox2.Location = new Point(15, 44);
-            checkBox2.Name = "checkBox2";
-            checkBox2.Size = new Size(173, 19);
-            checkBox2.TabIndex = 1;
-            checkBox2.Text = "Copy or Move to this Folder";
-            checkBox2.UseVisualStyleBackColor = true;
+            chkCopyOrMoveToThisFolder.AutoSize = true;
+            chkCopyOrMoveToThisFolder.Checked = true;
+            chkCopyOrMoveToThisFolder.CheckState = CheckState.Checked;
+            chkCopyOrMoveToThisFolder.Location = new Point(15, 44);
+            chkCopyOrMoveToThisFolder.Name = "chkCopyOrMoveToThisFolder";
+            chkCopyOrMoveToThisFolder.Size = new Size(173, 19);
+            chkCopyOrMoveToThisFolder.TabIndex = 1;
+            chkCopyOrMoveToThisFolder.Text = "Copy or Move to this Folder";
+            chkCopyOrMoveToThisFolder.UseVisualStyleBackColor = true;
             // 
-            // checkBox1
+            // chkUseFileDateToCopyOrMove
             // 
-            checkBox1.AutoSize = true;
-            checkBox1.Location = new Point(15, 22);
-            checkBox1.Name = "checkBox1";
-            checkBox1.Size = new Size(298, 19);
-            checkBox1.TabIndex = 0;
-            checkBox1.Text = "Use File Date to Move or Copy to Structured Folders";
-            checkBox1.UseVisualStyleBackColor = true;
+            chkUseFileDateToCopyOrMove.AutoSize = true;
+            chkUseFileDateToCopyOrMove.Location = new Point(15, 22);
+            chkUseFileDateToCopyOrMove.Name = "chkUseFileDateToCopyOrMove";
+            chkUseFileDateToCopyOrMove.Size = new Size(298, 19);
+            chkUseFileDateToCopyOrMove.TabIndex = 0;
+            chkUseFileDateToCopyOrMove.Text = "Use File Date to Move or Copy to Structured Folders";
+            chkUseFileDateToCopyOrMove.UseVisualStyleBackColor = true;
             // 
             // tabFileOptions
             // 
@@ -657,6 +672,7 @@ namespace PhotoMove
             // 
             // tabPage1
             // 
+            tabPage1.Controls.Add(btnUncheckAllFileTypes);
             tabPage1.Controls.Add(splitContainer1);
             tabPage1.Controls.Add(label2);
             tabPage1.Location = new Point(4, 24);
@@ -667,51 +683,66 @@ namespace PhotoMove
             tabPage1.Text = "File Types";
             tabPage1.UseVisualStyleBackColor = true;
             // 
+            // btnUncheckAllFileTypes
+            // 
+            btnUncheckAllFileTypes.Location = new Point(3, 222);
+            btnUncheckAllFileTypes.Name = "btnUncheckAllFileTypes";
+            btnUncheckAllFileTypes.Size = new Size(88, 23);
+            btnUncheckAllFileTypes.TabIndex = 11;
+            btnUncheckAllFileTypes.Text = "Uncheck All";
+            btnUncheckAllFileTypes.UseVisualStyleBackColor = true;
+            btnUncheckAllFileTypes.Click += btnUncheckAllFileTypes_Click;
+            // 
             // splitContainer1
             // 
-            splitContainer1.Dock = DockStyle.Fill;
             splitContainer1.Location = new Point(3, 26);
             splitContainer1.Name = "splitContainer1";
             // 
             // splitContainer1.Panel1
             // 
-            splitContainer1.Panel1.Controls.Add(clbFilesWithValidExifDates);
+            splitContainer1.Panel1.Controls.Add(lvFilesWithValidExifDates);
             splitContainer1.Panel1.Controls.Add(label6);
             // 
             // splitContainer1.Panel2
             // 
-            splitContainer1.Panel2.Controls.Add(clbFilesWithoutValidExifDates);
+            splitContainer1.Panel2.Controls.Add(lvFilesWithoutValidExifDates);
             splitContainer1.Panel2.Controls.Add(label7);
-            splitContainer1.Size = new Size(408, 219);
+            splitContainer1.Size = new Size(408, 192);
             splitContainer1.SplitterDistance = 204;
             splitContainer1.TabIndex = 11;
             // 
-            // clbFilesWithValidExifDates
+            // lvFilesWithValidExifDates
             // 
-            clbFilesWithValidExifDates.Dock = DockStyle.Fill;
-            clbFilesWithValidExifDates.FormattingEnabled = true;
-            clbFilesWithValidExifDates.Location = new Point(0, 14);
-            clbFilesWithValidExifDates.Name = "clbFilesWithValidExifDates";
-            clbFilesWithValidExifDates.Size = new Size(204, 205);
-            clbFilesWithValidExifDates.TabIndex = 3;
+            lvFilesWithValidExifDates.CheckBoxes = true;
+            lvFilesWithValidExifDates.Dock = DockStyle.Fill;
+            lvFilesWithValidExifDates.FullRowSelect = true;
+            lvFilesWithValidExifDates.Location = new Point(0, 15);
+            lvFilesWithValidExifDates.Name = "lvFilesWithValidExifDates";
+            lvFilesWithValidExifDates.Size = new Size(204, 177);
+            lvFilesWithValidExifDates.TabIndex = 3;
+            lvFilesWithValidExifDates.UseCompatibleStateImageBehavior = false;
+            lvFilesWithValidExifDates.View = View.Details;
             // 
             // label6
             // 
             label6.Dock = DockStyle.Top;
             label6.Location = new Point(0, 0);
             label6.Name = "label6";
-            label6.Size = new Size(204, 14);
+            label6.Size = new Size(204, 15);
             label6.TabIndex = 2;
             label6.Text = "Files With Valid Exif Dates:";
             // 
-            // clbFilesWithoutValidExifDates
+            // lvFilesWithoutValidExifDates
             // 
-            clbFilesWithoutValidExifDates.Dock = DockStyle.Fill;
-            clbFilesWithoutValidExifDates.FormattingEnabled = true;
-            clbFilesWithoutValidExifDates.Location = new Point(0, 14);
-            clbFilesWithoutValidExifDates.Name = "clbFilesWithoutValidExifDates";
-            clbFilesWithoutValidExifDates.Size = new Size(200, 205);
-            clbFilesWithoutValidExifDates.TabIndex = 4;
+            lvFilesWithoutValidExifDates.AllowColumnReorder = true;
+            lvFilesWithoutValidExifDates.CheckBoxes = true;
+            lvFilesWithoutValidExifDates.Dock = DockStyle.Fill;
+            lvFilesWithoutValidExifDates.Location = new Point(0, 14);
+            lvFilesWithoutValidExifDates.Name = "lvFilesWithoutValidExifDates";
+            lvFilesWithoutValidExifDates.Size = new Size(200, 178);
+            lvFilesWithoutValidExifDates.TabIndex = 4;
+            lvFilesWithoutValidExifDates.UseCompatibleStateImageBehavior = false;
+            lvFilesWithoutValidExifDates.View = View.Details;
             // 
             // label7
             // 
@@ -735,6 +766,7 @@ namespace PhotoMove
             // 
             // tabPage2
             // 
+            tabPage2.Controls.Add(btnUncheckAllCameraModel);
             tabPage2.Controls.Add(splitContainer2);
             tabPage2.Controls.Add(label3);
             tabPage2.Location = new Point(4, 24);
@@ -745,33 +777,45 @@ namespace PhotoMove
             tabPage2.Text = "Camera Models";
             tabPage2.UseVisualStyleBackColor = true;
             // 
+            // btnUncheckAllCameraModel
+            // 
+            btnUncheckAllCameraModel.Location = new Point(3, 222);
+            btnUncheckAllCameraModel.Name = "btnUncheckAllCameraModel";
+            btnUncheckAllCameraModel.Size = new Size(88, 23);
+            btnUncheckAllCameraModel.TabIndex = 13;
+            btnUncheckAllCameraModel.Text = "Uncheck All";
+            btnUncheckAllCameraModel.UseVisualStyleBackColor = true;
+            btnUncheckAllCameraModel.Click += btnUncheckAllCameraModel_Click;
+            // 
             // splitContainer2
             // 
-            splitContainer2.Dock = DockStyle.Fill;
             splitContainer2.Location = new Point(3, 26);
             splitContainer2.Name = "splitContainer2";
             // 
             // splitContainer2.Panel1
             // 
-            splitContainer2.Panel1.Controls.Add(clbCameraModelsWithValidExifDates);
+            splitContainer2.Panel1.Controls.Add(lvCameraModelsWithValidExifDates);
             splitContainer2.Panel1.Controls.Add(label5);
             // 
             // splitContainer2.Panel2
             // 
-            splitContainer2.Panel2.Controls.Add(clbCameraModelsWithoutValidExifDates);
+            splitContainer2.Panel2.Controls.Add(lvCameraModelsWithoutValidExifDates);
             splitContainer2.Panel2.Controls.Add(label8);
-            splitContainer2.Size = new Size(408, 219);
+            splitContainer2.Size = new Size(408, 192);
             splitContainer2.SplitterDistance = 204;
             splitContainer2.TabIndex = 12;
             // 
-            // clbCameraModelsWithValidExifDates
+            // lvCameraModelsWithValidExifDates
             // 
-            clbCameraModelsWithValidExifDates.Dock = DockStyle.Fill;
-            clbCameraModelsWithValidExifDates.FormattingEnabled = true;
-            clbCameraModelsWithValidExifDates.Location = new Point(0, 14);
-            clbCameraModelsWithValidExifDates.Name = "clbCameraModelsWithValidExifDates";
-            clbCameraModelsWithValidExifDates.Size = new Size(204, 205);
-            clbCameraModelsWithValidExifDates.TabIndex = 3;
+            lvCameraModelsWithValidExifDates.CheckBoxes = true;
+            lvCameraModelsWithValidExifDates.Dock = DockStyle.Fill;
+            lvCameraModelsWithValidExifDates.FullRowSelect = true;
+            lvCameraModelsWithValidExifDates.Location = new Point(0, 14);
+            lvCameraModelsWithValidExifDates.Name = "lvCameraModelsWithValidExifDates";
+            lvCameraModelsWithValidExifDates.Size = new Size(204, 178);
+            lvCameraModelsWithValidExifDates.TabIndex = 4;
+            lvCameraModelsWithValidExifDates.UseCompatibleStateImageBehavior = false;
+            lvCameraModelsWithValidExifDates.View = View.Details;
             // 
             // label5
             // 
@@ -782,14 +826,17 @@ namespace PhotoMove
             label5.TabIndex = 2;
             label5.Text = "Files With Valid Exif Dates:";
             // 
-            // clbCameraModelsWithoutValidExifDates
+            // lvCameraModelsWithoutValidExifDates
             // 
-            clbCameraModelsWithoutValidExifDates.Dock = DockStyle.Fill;
-            clbCameraModelsWithoutValidExifDates.FormattingEnabled = true;
-            clbCameraModelsWithoutValidExifDates.Location = new Point(0, 14);
-            clbCameraModelsWithoutValidExifDates.Name = "clbCameraModelsWithoutValidExifDates";
-            clbCameraModelsWithoutValidExifDates.Size = new Size(200, 205);
-            clbCameraModelsWithoutValidExifDates.TabIndex = 4;
+            lvCameraModelsWithoutValidExifDates.AllowColumnReorder = true;
+            lvCameraModelsWithoutValidExifDates.CheckBoxes = true;
+            lvCameraModelsWithoutValidExifDates.Dock = DockStyle.Fill;
+            lvCameraModelsWithoutValidExifDates.Location = new Point(0, 14);
+            lvCameraModelsWithoutValidExifDates.Name = "lvCameraModelsWithoutValidExifDates";
+            lvCameraModelsWithoutValidExifDates.Size = new Size(200, 178);
+            lvCameraModelsWithoutValidExifDates.TabIndex = 5;
+            lvCameraModelsWithoutValidExifDates.UseCompatibleStateImageBehavior = false;
+            lvCameraModelsWithoutValidExifDates.View = View.Details;
             // 
             // label8
             // 
@@ -813,8 +860,8 @@ namespace PhotoMove
             // 
             // tabPage3
             // 
-            tabPage3.Controls.Add(checkBox4);
-            tabPage3.Controls.Add(checkBox3);
+            tabPage3.Controls.Add(chkNoSeperator);
+            tabPage3.Controls.Add(chkUseDashesInFolderName);
             tabPage3.Location = new Point(4, 24);
             tabPage3.Name = "tabPage3";
             tabPage3.Size = new Size(414, 248);
@@ -822,25 +869,25 @@ namespace PhotoMove
             tabPage3.Text = "Other Options";
             tabPage3.UseVisualStyleBackColor = true;
             // 
-            // checkBox4
+            // chkNoSeperator
             // 
-            checkBox4.AutoSize = true;
-            checkBox4.Location = new Point(11, 43);
-            checkBox4.Name = "checkBox4";
-            checkBox4.Size = new Size(280, 19);
-            checkBox4.TabIndex = 1;
-            checkBox4.Text = "No Seperator. Do not use Dashes or Underscores";
-            checkBox4.UseVisualStyleBackColor = true;
+            chkNoSeperator.AutoSize = true;
+            chkNoSeperator.Location = new Point(11, 43);
+            chkNoSeperator.Name = "chkNoSeperator";
+            chkNoSeperator.Size = new Size(280, 19);
+            chkNoSeperator.TabIndex = 1;
+            chkNoSeperator.Text = "No Seperator. Do not use Dashes or Underscores";
+            chkNoSeperator.UseVisualStyleBackColor = true;
             // 
-            // checkBox3
+            // chkUseDashesInFolderName
             // 
-            checkBox3.AutoSize = true;
-            checkBox3.Location = new Point(11, 18);
-            checkBox3.Name = "checkBox3";
-            checkBox3.Size = new Size(271, 19);
-            checkBox3.TabIndex = 0;
-            checkBox3.Text = "Use Dashes. Not Underscores. In Folder Names";
-            checkBox3.UseVisualStyleBackColor = true;
+            chkUseDashesInFolderName.AutoSize = true;
+            chkUseDashesInFolderName.Location = new Point(11, 18);
+            chkUseDashesInFolderName.Name = "chkUseDashesInFolderName";
+            chkUseDashesInFolderName.Size = new Size(271, 19);
+            chkUseDashesInFolderName.TabIndex = 0;
+            chkUseDashesInFolderName.Text = "Use Dashes. Not Underscores. In Folder Names";
+            chkUseDashesInFolderName.UseVisualStyleBackColor = true;
             // 
             // menuStrip1
             // 
@@ -882,7 +929,7 @@ namespace PhotoMove
             // statusStrip1
             // 
             statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1 });
-            statusStrip1.Location = new Point(0, 670);
+            statusStrip1.Location = new Point(0, 696);
             statusStrip1.Name = "statusStrip1";
             statusStrip1.Size = new Size(1023, 22);
             statusStrip1.TabIndex = 10;
@@ -891,19 +938,18 @@ namespace PhotoMove
             // toolStripStatusLabel1
             // 
             toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            toolStripStatusLabel1.Size = new Size(118, 17);
-            toolStripStatusLabel1.Text = "toolStripStatusLabel1";
+            toolStripStatusLabel1.Size = new Size(0, 17);
             // 
             // frmMain
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1023, 692);
+            ClientSize = new Size(1023, 718);
             Controls.Add(statusStrip1);
             Controls.Add(tabFileOptions);
             Controls.Add(groupBox8);
             Controls.Add(groupBox7);
-            Controls.Add(groupBox6);
+            Controls.Add(grbHowFilesAreDuplicates);
             Controls.Add(groupBox5);
             Controls.Add(grbCopyOrMove);
             Controls.Add(groupBox3);
@@ -914,7 +960,7 @@ namespace PhotoMove
             MaximizeBox = false;
             Name = "frmMain";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "PhotoMove";
+            Text = "PhotoMove 1.0";
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
             groupBox2.ResumeLayout(false);
@@ -927,8 +973,8 @@ namespace PhotoMove
             grbCancel.ResumeLayout(false);
             grbProgress.ResumeLayout(false);
             groupBox5.ResumeLayout(false);
-            groupBox6.ResumeLayout(false);
-            groupBox6.PerformLayout();
+            grbHowFilesAreDuplicates.ResumeLayout(false);
+            grbHowFilesAreDuplicates.PerformLayout();
             groupBox7.ResumeLayout(false);
             grbDuplicatesFolder.ResumeLayout(false);
             grbDuplicatesFolder.PerformLayout();
@@ -981,7 +1027,7 @@ namespace PhotoMove
         private Button btnShowSummaryReport;
         private GroupBox groupBox5;
         private ComboBox cmbOutputFolderStructure;
-        private GroupBox groupBox6;
+        private GroupBox grbHowFilesAreDuplicates;
         private RadioButton radAllExifAndExactFileContentsMatch;
         private RadioButton radFileNamesMatch;
         private GroupBox grbProgress;
@@ -995,10 +1041,10 @@ namespace PhotoMove
         private TextBox txtDuplicatesFolderPath;
         private Label label1;
         private GroupBox groupBox8;
-        private CheckBox checkBox2;
-        private CheckBox checkBox1;
-        private Button button2;
-        private TextBox textBox2;
+        private CheckBox chkCopyOrMoveToThisFolder;
+        private CheckBox chkUseFileDateToCopyOrMove;
+        private Button btnChooseFolderForFilesWithNoExif;
+        private TextBox txtFolderForFilesWithNoExif;
         private TabControl tabFileOptions;
         private TabPage tabPage1;
         private TabPage tabPage2;
@@ -1006,17 +1052,15 @@ namespace PhotoMove
         private TabPage tabPage3;
         private Label label2;
         private Label label3;
-        private CheckBox checkBox4;
-        private CheckBox checkBox3;
+        private CheckBox chkNoSeperator;
+        private CheckBox chkUseDashesInFolderName;
         private MenuStrip menuStrip1;
         private ToolStripMenuItem fileToolStripMenuItem;
         private ToolStripMenuItem helpToolStripMenuItem;
         private ToolStripMenuItem exitToolStripMenuItem;
         private ToolStripMenuItem aboutToolStripMenuItem;
         private SplitContainer splitContainer1;
-        private CheckedListBox clbFilesWithValidExifDates;
         private Label label6;
-        private CheckedListBox clbFilesWithoutValidExifDates;
         private Label label7;
         private GroupBox grbFindingPhottos;
         private Button btnCancelFindingPhotos;
@@ -1024,12 +1068,17 @@ namespace PhotoMove
         private Label label4;
         private ProgressBar pgbFindingFiles;
         private SplitContainer splitContainer2;
-        private CheckedListBox clbCameraModelsWithValidExifDates;
         private Label label5;
-        private CheckedListBox clbCameraModelsWithoutValidExifDates;
         private Label label8;
         private ProgressBar pgbCopyingOrMovingFiles;
         private StatusStrip statusStrip1;
         private ToolStripStatusLabel toolStripStatusLabel1;
+        private Button btnUncheckAllFileTypes;
+        private Button btnUncheckAllCameraModel;
+        private ListView lvFilesWithValidExifDates;
+        private ListView lvFilesWithoutValidExifDates;
+        private ListView lvCameraModelsWithValidExifDates;
+        private ListView lvCameraModelsWithoutValidExifDates;
+        private Button btnShowListScanFiles;
     }
 }

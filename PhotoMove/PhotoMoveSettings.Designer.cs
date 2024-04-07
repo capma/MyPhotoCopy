@@ -82,5 +82,17 @@ namespace PhotoMove {
                 this["selectedCopyMoveExistedFiles"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string FilesWithNoExifDateCreatedFolder {
+            get {
+                return ((string)(this["FilesWithNoExifDateCreatedFolder"]));
+            }
+            set {
+                this["FilesWithNoExifDateCreatedFolder"] = value;
+            }
+        }
     }
 }
