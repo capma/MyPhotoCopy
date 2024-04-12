@@ -15,12 +15,17 @@ namespace PhotoMove.Models
 
         public string? ExifIfd0Directory_takenDate { get; set; }
         public string? ExifIfd0Directory_cameraModel { get; set; }
+        public string? ExifIfd0Directory_cameraMake { get; set; }
 
         //public string? ExifThumbnailDirectory_takenDate { get; set; }
         //public string? ExifThumbnailDirectory_cameraModel { get; set; }
 
+        // XMP properties
+        public string? XMP_takenDate { get; set; }
+
         public DateTime takenDate { get; set; }
         public string? cameraModel { get; set; } = string.Empty;
+        public string? cameraMake { get; set; } = string.Empty;
 
 
         // other properties

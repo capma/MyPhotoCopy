@@ -39,6 +39,8 @@ namespace PhotoMove
             btnChooseOutputFolder = new Button();
             txtDestinationFolder = new TextBox();
             groupBox3 = new GroupBox();
+            btnShowListOfNoExifDateFiles = new Button();
+            btnShowListOfValidExifDateFiles = new Button();
             pgbFindingFiles = new ProgressBar();
             grbFindingPhottos = new GroupBox();
             btnCancelFindingPhotos = new Button();
@@ -54,7 +56,6 @@ namespace PhotoMove
             lblTotalFiles = new Label();
             btnFindPhotos = new Button();
             grbCopyOrMove = new GroupBox();
-            btnShowListScanFiles = new Button();
             grbCancel = new GroupBox();
             pgbCopyingOrMovingFiles = new ProgressBar();
             btnCancelCopyingOrMoving = new Button();
@@ -211,6 +212,8 @@ namespace PhotoMove
             // 
             // groupBox3
             // 
+            groupBox3.Controls.Add(btnShowListOfNoExifDateFiles);
+            groupBox3.Controls.Add(btnShowListOfValidExifDateFiles);
             groupBox3.Controls.Add(pgbFindingFiles);
             groupBox3.Controls.Add(grbFindingPhottos);
             groupBox3.Controls.Add(lblTitleHaveExifButNoValidDate);
@@ -228,6 +231,28 @@ namespace PhotoMove
             groupBox3.TabIndex = 2;
             groupBox3.TabStop = false;
             groupBox3.Text = "Step 3: Find Photos to Move or Copy:";
+            // 
+            // btnShowListOfNoExifDateFiles
+            // 
+            btnShowListOfNoExifDateFiles.Location = new Point(6, 105);
+            btnShowListOfNoExifDateFiles.Name = "btnShowListOfNoExifDateFiles";
+            btnShowListOfNoExifDateFiles.Size = new Size(159, 23);
+            btnShowListOfNoExifDateFiles.TabIndex = 15;
+            btnShowListOfNoExifDateFiles.Text = "List of No Exif Date Files";
+            btnShowListOfNoExifDateFiles.UseVisualStyleBackColor = true;
+            btnShowListOfNoExifDateFiles.Visible = false;
+            btnShowListOfNoExifDateFiles.Click += btnShowListOfNoExifDateFiles_Click;
+            // 
+            // btnShowListOfValidExifDateFiles
+            // 
+            btnShowListOfValidExifDateFiles.Location = new Point(6, 76);
+            btnShowListOfValidExifDateFiles.Name = "btnShowListOfValidExifDateFiles";
+            btnShowListOfValidExifDateFiles.Size = new Size(159, 23);
+            btnShowListOfValidExifDateFiles.TabIndex = 14;
+            btnShowListOfValidExifDateFiles.Text = "List of Valid Exif Date Files";
+            btnShowListOfValidExifDateFiles.UseVisualStyleBackColor = true;
+            btnShowListOfValidExifDateFiles.Visible = false;
+            btnShowListOfValidExifDateFiles.Click += btnShowListOfValidExifDateFiles_Click;
             // 
             // pgbFindingFiles
             // 
@@ -369,7 +394,6 @@ namespace PhotoMove
             // 
             // grbCopyOrMove
             // 
-            grbCopyOrMove.Controls.Add(btnShowListScanFiles);
             grbCopyOrMove.Controls.Add(grbCancel);
             grbCopyOrMove.Controls.Add(grbProgress);
             grbCopyOrMove.Controls.Add(chkAlwaysShowSummaryReport);
@@ -379,20 +403,10 @@ namespace PhotoMove
             grbCopyOrMove.Enabled = false;
             grbCopyOrMove.Location = new Point(12, 493);
             grbCopyOrMove.Name = "grbCopyOrMove";
-            grbCopyOrMove.Size = new Size(538, 200);
+            grbCopyOrMove.Size = new Size(538, 172);
             grbCopyOrMove.TabIndex = 3;
             grbCopyOrMove.TabStop = false;
             grbCopyOrMove.Text = "Step 4: Copy or Move Photos to Date Sorted Folders";
-            // 
-            // btnShowListScanFiles
-            // 
-            btnShowListScanFiles.Location = new Point(6, 173);
-            btnShowListScanFiles.Name = "btnShowListScanFiles";
-            btnShowListScanFiles.Size = new Size(208, 23);
-            btnShowListScanFiles.TabIndex = 6;
-            btnShowListScanFiles.Text = "Show Scan Files";
-            btnShowListScanFiles.UseVisualStyleBackColor = true;
-            btnShowListScanFiles.Click += btnShowListScanFiles_Click;
             // 
             // grbCancel
             // 
@@ -470,6 +484,7 @@ namespace PhotoMove
             btnShowSummaryReport.TabIndex = 2;
             btnShowSummaryReport.Text = "Show Summary Report";
             btnShowSummaryReport.UseVisualStyleBackColor = true;
+            btnShowSummaryReport.Click += btnShowSummaryReport_Click;
             // 
             // btnMoveToDestinationFolders
             // 
@@ -929,7 +944,7 @@ namespace PhotoMove
             // statusStrip1
             // 
             statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1 });
-            statusStrip1.Location = new Point(0, 696);
+            statusStrip1.Location = new Point(0, 670);
             statusStrip1.Name = "statusStrip1";
             statusStrip1.Size = new Size(1023, 22);
             statusStrip1.TabIndex = 10;
@@ -944,7 +959,7 @@ namespace PhotoMove
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1023, 718);
+            ClientSize = new Size(1023, 692);
             Controls.Add(statusStrip1);
             Controls.Add(tabFileOptions);
             Controls.Add(groupBox8);
@@ -1079,6 +1094,7 @@ namespace PhotoMove
         private ListView lvFilesWithoutValidExifDates;
         private ListView lvCameraModelsWithValidExifDates;
         private ListView lvCameraModelsWithoutValidExifDates;
-        private Button btnShowListScanFiles;
+        private Button btnShowListOfNoExifDateFiles;
+        private Button btnShowListOfValidExifDateFiles;
     }
 }

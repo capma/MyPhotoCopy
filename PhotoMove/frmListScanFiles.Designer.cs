@@ -34,19 +34,24 @@
             // 
             // dgScanFiles
             // 
+            dgScanFiles.AllowUserToAddRows = false;
+            dgScanFiles.AllowUserToDeleteRows = false;
+            dgScanFiles.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.AllCells;
+            dgScanFiles.ClipboardCopyMode = System.Windows.Forms.DataGridViewClipboardCopyMode.EnableAlwaysIncludeHeaderText;
             dgScanFiles.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dgScanFiles.Dock = System.Windows.Forms.DockStyle.Fill;
             dgScanFiles.Location = new System.Drawing.Point(0, 0);
             dgScanFiles.Name = "dgScanFiles";
             dgScanFiles.ReadOnly = true;
-            dgScanFiles.Size = new System.Drawing.Size(792, 535);
+            dgScanFiles.RowHeadersVisible = false;
+            dgScanFiles.Size = new System.Drawing.Size(1103, 535);
             dgScanFiles.TabIndex = 1;
             // 
             // frmListScanFiles
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(792, 535);
+            ClientSize = new System.Drawing.Size(1103, 535);
             Controls.Add(dgScanFiles);
             Name = "frmListScanFiles";
             StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
