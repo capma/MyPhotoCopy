@@ -17,6 +17,7 @@ namespace PhotoMove.Models
         public List<string> selectedCameraModels { get; set; } = new();
         public bool checkedUseDashesInFolderNames { get; set; }
         public bool checkedNoSeperator { get; set; }
+        public bool checkedUseUnderscoresInFolderNames {  get; set; }
 
     }
 }

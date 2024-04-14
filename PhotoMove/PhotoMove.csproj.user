@@ -7,6 +7,9 @@
     <Compile Update="frmListScanFiles.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="frmMain.Controller.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="frmMain.cs">
       <SubType>Form</SubType>
     </Compile>

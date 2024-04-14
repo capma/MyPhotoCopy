@@ -94,5 +94,17 @@ namespace PhotoMove {
                 this["FilesWithNoExifDateCreatedFolder"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int selectedSeperatorInFolderName {
+            get {
+                return ((int)(this["selectedSeperatorInFolderName"]));
+            }
+            set {
+                this["selectedSeperatorInFolderName"] = value;
+            }
+        }
     }
 }

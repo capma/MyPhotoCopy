@@ -16,12 +16,9 @@ namespace PhotoMove
 
         public void ShowData(List<ScanFileReport> scanFiles)
         {
-            //dgScanFiles.Columns[0].Width = 100;
-
             dgScanFiles.DataSource = Funcs.ToDataTable(scanFiles);
         }
     }
-
 
     static class Funcs
     {
@@ -29,7 +26,7 @@ namespace PhotoMove
         {
             PropertyDescriptorCollection properties =
                 TypeDescriptor.GetProperties(typeof(T));
-            DataTable table = new DataTable();
+            DataTable table = new();
             foreach (PropertyDescriptor prop in properties)
                 table.Columns.Add(prop.Name, Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType);
             foreach (T item in data)

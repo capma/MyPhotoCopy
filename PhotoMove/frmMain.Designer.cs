@@ -100,8 +100,10 @@ namespace PhotoMove
             label8 = new Label();
             label3 = new Label();
             tabPage3 = new TabPage();
-            chkNoSeperator = new CheckBox();
-            chkUseDashesInFolderName = new CheckBox();
+            grbSeperatorInFolderName = new GroupBox();
+            radUseUnderscoreInFolderName = new RadioButton();
+            radNoSeperator = new RadioButton();
+            radUseDashesInFolderName = new RadioButton();
             menuStrip1 = new MenuStrip();
             fileToolStripMenuItem = new ToolStripMenuItem();
             exitToolStripMenuItem = new ToolStripMenuItem();
@@ -109,6 +111,7 @@ namespace PhotoMove
             aboutToolStripMenuItem = new ToolStripMenuItem();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
+            btnTestScanFiles = new Button();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
             groupBox3.SuspendLayout();
@@ -133,6 +136,7 @@ namespace PhotoMove
             splitContainer2.Panel2.SuspendLayout();
             splitContainer2.SuspendLayout();
             tabPage3.SuspendLayout();
+            grbSeperatorInFolderName.SuspendLayout();
             menuStrip1.SuspendLayout();
             statusStrip1.SuspendLayout();
             SuspendLayout();
@@ -182,6 +186,7 @@ namespace PhotoMove
             // 
             // groupBox2
             // 
+            groupBox2.Controls.Add(btnTestScanFiles);
             groupBox2.Controls.Add(btnChooseOutputFolder);
             groupBox2.Controls.Add(txtDestinationFolder);
             groupBox2.Location = new Point(12, 131);
@@ -875,8 +880,7 @@ namespace PhotoMove
             // 
             // tabPage3
             // 
-            tabPage3.Controls.Add(chkNoSeperator);
-            tabPage3.Controls.Add(chkUseDashesInFolderName);
+            tabPage3.Controls.Add(grbSeperatorInFolderName);
             tabPage3.Location = new Point(4, 24);
             tabPage3.Name = "tabPage3";
             tabPage3.Size = new Size(414, 248);
@@ -884,25 +888,53 @@ namespace PhotoMove
             tabPage3.Text = "Other Options";
             tabPage3.UseVisualStyleBackColor = true;
             // 
-            // chkNoSeperator
+            // grbSeperatorInFolderName
             // 
-            chkNoSeperator.AutoSize = true;
-            chkNoSeperator.Location = new Point(11, 43);
-            chkNoSeperator.Name = "chkNoSeperator";
-            chkNoSeperator.Size = new Size(280, 19);
-            chkNoSeperator.TabIndex = 1;
-            chkNoSeperator.Text = "No Seperator. Do not use Dashes or Underscores";
-            chkNoSeperator.UseVisualStyleBackColor = true;
+            grbSeperatorInFolderName.Controls.Add(radUseUnderscoreInFolderName);
+            grbSeperatorInFolderName.Controls.Add(radNoSeperator);
+            grbSeperatorInFolderName.Controls.Add(radUseDashesInFolderName);
+            grbSeperatorInFolderName.Dock = DockStyle.Fill;
+            grbSeperatorInFolderName.Location = new Point(0, 0);
+            grbSeperatorInFolderName.Name = "grbSeperatorInFolderName";
+            grbSeperatorInFolderName.Size = new Size(414, 248);
+            grbSeperatorInFolderName.TabIndex = 2;
+            grbSeperatorInFolderName.TabStop = false;
             // 
-            // chkUseDashesInFolderName
+            // radUseUnderscoreInFolderName
             // 
-            chkUseDashesInFolderName.AutoSize = true;
-            chkUseDashesInFolderName.Location = new Point(11, 18);
-            chkUseDashesInFolderName.Name = "chkUseDashesInFolderName";
-            chkUseDashesInFolderName.Size = new Size(271, 19);
-            chkUseDashesInFolderName.TabIndex = 0;
-            chkUseDashesInFolderName.Text = "Use Dashes. Not Underscores. In Folder Names";
-            chkUseDashesInFolderName.UseVisualStyleBackColor = true;
+            radUseUnderscoreInFolderName.AutoSize = true;
+            radUseUnderscoreInFolderName.Location = new Point(21, 102);
+            radUseUnderscoreInFolderName.Name = "radUseUnderscoreInFolderName";
+            radUseUnderscoreInFolderName.Size = new Size(201, 19);
+            radUseUnderscoreInFolderName.TabIndex = 2;
+            radUseUnderscoreInFolderName.TabStop = true;
+            radUseUnderscoreInFolderName.Text = "Use Underscores In Folder Names";
+            radUseUnderscoreInFolderName.UseVisualStyleBackColor = true;
+            radUseUnderscoreInFolderName.CheckedChanged += RadioButton_CheckedChanged;
+            // 
+            // radNoSeperator
+            // 
+            radNoSeperator.AutoSize = true;
+            radNoSeperator.Location = new Point(21, 32);
+            radNoSeperator.Name = "radNoSeperator";
+            radNoSeperator.Size = new Size(279, 19);
+            radNoSeperator.TabIndex = 0;
+            radNoSeperator.TabStop = true;
+            radNoSeperator.Text = "No Seperator. Do not use Dashes or Underscores";
+            radNoSeperator.UseVisualStyleBackColor = true;
+            radNoSeperator.CheckedChanged += RadioButton_CheckedChanged;
+            // 
+            // radUseDashesInFolderName
+            // 
+            radUseDashesInFolderName.AutoSize = true;
+            radUseDashesInFolderName.Location = new Point(21, 67);
+            radUseDashesInFolderName.Name = "radUseDashesInFolderName";
+            radUseDashesInFolderName.Size = new Size(270, 19);
+            radUseDashesInFolderName.TabIndex = 1;
+            radUseDashesInFolderName.TabStop = true;
+            radUseDashesInFolderName.Text = "Use Dashes. Not Underscores. In Folder Names";
+            radUseDashesInFolderName.UseVisualStyleBackColor = true;
+            radUseDashesInFolderName.CheckedChanged += RadioButton_CheckedChanged;
             // 
             // menuStrip1
             // 
@@ -954,6 +986,16 @@ namespace PhotoMove
             // 
             toolStripStatusLabel1.Name = "toolStripStatusLabel1";
             toolStripStatusLabel1.Size = new Size(0, 17);
+            // 
+            // btnTestScanFiles
+            // 
+            btnTestScanFiles.Location = new Point(305, 51);
+            btnTestScanFiles.Name = "btnTestScanFiles";
+            btnTestScanFiles.Size = new Size(76, 23);
+            btnTestScanFiles.TabIndex = 2;
+            btnTestScanFiles.Text = "button1";
+            btnTestScanFiles.UseVisualStyleBackColor = true;
+            btnTestScanFiles.Click += btnTestScanFiles_Click;
             // 
             // frmMain
             // 
@@ -1007,7 +1049,8 @@ namespace PhotoMove
             ((System.ComponentModel.ISupportInitialize)splitContainer2).EndInit();
             splitContainer2.ResumeLayout(false);
             tabPage3.ResumeLayout(false);
-            tabPage3.PerformLayout();
+            grbSeperatorInFolderName.ResumeLayout(false);
+            grbSeperatorInFolderName.PerformLayout();
             menuStrip1.ResumeLayout(false);
             menuStrip1.PerformLayout();
             statusStrip1.ResumeLayout(false);
@@ -1067,8 +1110,6 @@ namespace PhotoMove
         private TabPage tabPage3;
         private Label label2;
         private Label label3;
-        private CheckBox chkNoSeperator;
-        private CheckBox chkUseDashesInFolderName;
         private MenuStrip menuStrip1;
         private ToolStripMenuItem fileToolStripMenuItem;
         private ToolStripMenuItem helpToolStripMenuItem;
@@ -1096,5 +1137,10 @@ namespace PhotoMove
         private ListView lvCameraModelsWithoutValidExifDates;
         private Button btnShowListOfNoExifDateFiles;
         private Button btnShowListOfValidExifDateFiles;
+        private GroupBox grbSeperatorInFolderName;
+        private RadioButton radNoSeperator;
+        private RadioButton radUseDashesInFolderName;
+        private RadioButton radUseUnderscoreInFolderName;
+        private Button btnTestScanFiles;
     }
 }
