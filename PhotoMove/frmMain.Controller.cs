@@ -17,10 +17,17 @@ namespace PhotoMove
     {
         private void InitForm()
         {
+            InitTimer();
             InitializeOtherComponents();
             InitComboBoxOutputFolderStructure();
             InitComboBoxCopyOrMoveExistFiles();
             InitListViews();
+        }
+
+        private void InitTimer()
+        {
+            timer1.Interval = 100; // Set timer interval to 1 second
+            timer1.Tick += new EventHandler(timer1_Tick);
         }
 
         private void InitializeOtherComponents()
@@ -161,9 +168,6 @@ namespace PhotoMove
             int validDateCount = 0;
             int noValidDateCount = 0;
 
-            Stopwatch stopwatch = new();
-            stopwatch.Start();
-
             var files = System.IO.Directory.GetFiles(userOptions.selectedFolderWithPhotosToProcess, "*.*", SearchOption.AllDirectories);
 
             pgbFindingFiles.Invoke((MethodInvoker)delegate
@@ -188,6 +192,12 @@ namespace PhotoMove
 
                 // new scan file
                 ScanFile fileInfo = new(file);
+
+                lblFindingFilesWithExif.Invoke((MethodInvoker)delegate
+                {
+                    lblFindingFilesWithExif.Text = file;
+                });
+                
 
                 try
                 {
@@ -234,13 +244,6 @@ namespace PhotoMove
                 {
                     pgbFindingFiles.PerformStep();
                 });
-
-                // Update the status strip
-                toolStripStatusLabel1.Text = $"Time: {stopwatch.Elapsed.TotalSeconds} seconds elapsed.";
-                statusStrip1.Invoke((MethodInvoker)delegate
-                {
-                    statusStrip1.Refresh();
-                });
             }
 
             tabFileOptions.Invoke((MethodInvoker)delegate
@@ -256,16 +259,11 @@ namespace PhotoMove
             scanStatistics.exifFileCount = exifFileCount;
             scanStatistics.validDateCount = validDateCount;
             scanStatistics.noValidDateCount = noValidDateCount;
-
-            stopwatch.Stop();
         }
 
         private void CopyOrMoveFiles()
         {
             int fileCount = 0;
-
-            Stopwatch stopwatch = new();
-            stopwatch.Start();
 
             var filteredFiles = scanFiles.Where(x => userOptions.selectedFileTypes.Contains(x?.fileExtension ?? string.Empty)
                                                   && userOptions.selectedCameraModels.Contains(x?.cameraModel ?? string.Empty)
@@ -304,13 +302,11 @@ namespace PhotoMove
                     // Copy the file to the new directory
                     string newFilePath = file.fileName != null ? Path.Combine(newFolderPath, file.fileName) : newFolderPath;
 
-                    bool isCopied = false;
-
                     // check if the copying file exists in the destination folder
                     if (!IsDuplicateFile(newFilePath, file.filePath))
                     {
                         File.Copy(file.filePath, newFilePath);
-                        isCopied = true;
+                        file.isCopiedOrMoved = true;
                     }
                     else
                     {
@@ -323,12 +319,12 @@ namespace PhotoMove
                                 // Add '-Copy###'. then Move or Copy
                                 string newFileName = GenerateUniqueCopyName(newFilePath);
                                 File.Copy(file.filePath, Path.Combine(Path.GetDirectoryName(newFilePath) ?? string.Empty, newFileName));
-                                isCopied = true;
+                                file.isCopiedOrMoved = true;
                                 break;
                             case 2:
                                 // Overwrite the Existing File
                                 File.Copy(file.filePath, newFilePath, true);
-                                isCopied = true;
+                                file.isCopiedOrMoved = true;
                                 break;
                             case 3:
                                 // Move to specified Duplicates Folder:
@@ -340,7 +336,7 @@ namespace PhotoMove
                                     string newNewFilePath = Path.Combine(newNewFolderPath, Path.GetFileName(file.filePath));
 
                                     File.Copy(file.filePath, Path.Combine(newNewFolderPath, Path.GetFileName(newNewFilePath)));
-                                    isCopied = true;
+                                    file.isCopiedOrMoved = true;
                                 }
                                 break;
                             default:
@@ -348,7 +344,7 @@ namespace PhotoMove
                         }
                     }
 
-                    if (isCopied)
+                    if (file.isCopiedOrMoved)
                     {
                         // Update the TextBox with the number of files copied
                         fileCount++;
@@ -368,13 +364,6 @@ namespace PhotoMove
                 {
                     // This file does not contain EXIF data or could not be processed
                 }
-
-                // Update the status strip
-                toolStripStatusLabel1.Text = $"Time: {stopwatch.Elapsed.TotalSeconds} seconds elapsed.";
-                statusStrip1.Invoke((MethodInvoker)delegate
-                {
-                    statusStrip1.Refresh();
-                });
             }
 
             Invoke((MethodInvoker)(() =>
@@ -384,8 +373,6 @@ namespace PhotoMove
                 lblCopyingProgress.BackColor = DefaultBackColor;
                 lblCopyingProgress.Text = "Copy Operation Completed Successfully";
             }));
-
-            stopwatch.Stop();
         }
 
         private void RefreshFileTypesTab()

@@ -17,6 +17,7 @@ namespace PhotoMove.Models
         public string? cameraMake { get; set; } = string.Empty;
         public bool isValidExif { get; set; } = false;
         public bool isValidTakenDate { get; set; } = false;
+        public bool isCopiedOrMoved { get; set; } = false;
         public List<MyTag> tags { get; set; }
         public List<string> errors { get; set; }
 

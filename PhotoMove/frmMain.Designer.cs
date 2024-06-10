@@ -31,11 +31,13 @@ namespace PhotoMove
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             groupBox1 = new GroupBox();
             chkIncludeSubFolders = new CheckBox();
             btnChooseFolder = new Button();
             txtPhotoFolder = new TextBox();
             groupBox2 = new GroupBox();
+            btnTestScanFiles = new Button();
             btnChooseOutputFolder = new Button();
             txtDestinationFolder = new TextBox();
             groupBox3 = new GroupBox();
@@ -111,7 +113,7 @@ namespace PhotoMove
             aboutToolStripMenuItem = new ToolStripMenuItem();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
-            btnTestScanFiles = new Button();
+            timer1 = new Timer(components);
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
             groupBox3.SuspendLayout();
@@ -195,6 +197,16 @@ namespace PhotoMove
             groupBox2.TabIndex = 1;
             groupBox2.TabStop = false;
             groupBox2.Text = "Step 2: Set Destination Folder Under Which Date Sorted Folders Will Be Made:";
+            // 
+            // btnTestScanFiles
+            // 
+            btnTestScanFiles.Location = new Point(305, 51);
+            btnTestScanFiles.Name = "btnTestScanFiles";
+            btnTestScanFiles.Size = new Size(76, 23);
+            btnTestScanFiles.TabIndex = 2;
+            btnTestScanFiles.Text = "button1";
+            btnTestScanFiles.UseVisualStyleBackColor = true;
+            btnTestScanFiles.Click += btnTestScanFiles_Click;
             // 
             // btnChooseOutputFolder
             // 
@@ -987,15 +999,9 @@ namespace PhotoMove
             toolStripStatusLabel1.Name = "toolStripStatusLabel1";
             toolStripStatusLabel1.Size = new Size(0, 17);
             // 
-            // btnTestScanFiles
+            // timer1
             // 
-            btnTestScanFiles.Location = new Point(305, 51);
-            btnTestScanFiles.Name = "btnTestScanFiles";
-            btnTestScanFiles.Size = new Size(76, 23);
-            btnTestScanFiles.TabIndex = 2;
-            btnTestScanFiles.Text = "button1";
-            btnTestScanFiles.UseVisualStyleBackColor = true;
-            btnTestScanFiles.Click += btnTestScanFiles_Click;
+            timer1.Tick += timer1_Tick;
             // 
             // frmMain
             // 
@@ -1142,5 +1148,6 @@ namespace PhotoMove
         private RadioButton radUseDashesInFolderName;
         private RadioButton radUseUnderscoreInFolderName;
         private Button btnTestScanFiles;
+        private Timer timer1;
     }
 }

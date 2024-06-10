@@ -6,9 +6,11 @@ namespace PhotoMove
     using System.Threading;
     using System.Threading.Tasks;
     using PhotoMove.Models;
+    using System.Diagnostics;
 
     public partial class frmMain : Form
     {
+        Stopwatch stopwatch = new Stopwatch();
         CancellationTokenSource cancellationTokenSource = new();
         List<ScanFile> scanFiles = new();
         UserOptions userOptions = new();
@@ -85,6 +87,12 @@ namespace PhotoMove
 
             try
             {
+                // Reset and start the Stopwatch and Timer
+                stopwatch.Reset();
+                stopwatch.Start();
+                timer1.Stop();
+                timer1.Start();
+
                 ResetFindFilesStatistics();
 
                 grbFindingPhottos.Visible = true;
@@ -109,6 +117,11 @@ namespace PhotoMove
                 grbFindingPhottos.Visible = false;
                 pgbFindingFiles.Visible = false;
             }
+            finally 
+            {
+                stopwatch.Stop();
+                timer1.Stop();
+            }
         }
 
         private async void btnCopyToDestinationFolders_Click(object sender, EventArgs e)
@@ -117,6 +130,12 @@ namespace PhotoMove
 
             try
             {
+                // Reset and start the Stopwatch and Timer
+                stopwatch.Reset();
+                stopwatch.Start();
+                timer1.Stop();
+                timer1.Start();
+
                 grbCancel.Visible = true;
                 grbProgress.Visible = true;
                 lblCopyingFiles.Text = "0";
@@ -131,6 +150,11 @@ namespace PhotoMove
             {
                 //break;
                 grbCancel.Visible = false;
+            }
+            finally 
+            {
+                stopwatch.Stop();
+                timer1.Stop();
             }
         }
 
@@ -219,7 +243,7 @@ namespace PhotoMove
         private void btnShowSummaryReport_Click(object sender, EventArgs e)
         {
             frmListScanFiles childForm = new();
-            var filteredFiles = FilteredQuery(x => 1 == 1);
+            var filteredFiles = FilteredQuery(x => x.isCopiedOrMoved);
             childForm.ShowData(filteredFiles);
             this.Hide();
             childForm.FormClosed += frmListScanFiles_FormClosed; // Attach the FormClosed event handler
@@ -250,6 +274,12 @@ namespace PhotoMove
         {
             GetUserOptions();
             DoScanFiles2();
+        }
+
+        private void timer1_Tick(object? sender, EventArgs e)
+        {
+            // Update the status strip
+            toolStripStatusLabel1.Text = $"Time: {stopwatch.Elapsed.ToString()} seconds elapsed.";
         }
     }
 }

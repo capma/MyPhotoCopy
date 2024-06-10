@@ -6,7 +6,7 @@
         public string File { get; set; } = string.Empty;
         public string? Make { get; set; } = string.Empty;
         public string? Model { get; set; } = string.Empty;
-        public string Date { get; set; }
-        public string Time { get; set; }
+        public string? Date { get; set; }
+        public string? Time { get; set; }
     }
 }
