@@ -1,4 +1,8 @@
 ﻿using MetadataExtractor;
+using MetadataExtractor.Formats.Avi;
+using MetadataExtractor.Formats.Exif;
+using MetadataExtractor.Formats.Jpeg;
+using MetadataExtractor.Formats.QuickTime;
 using PhotoMove.Constants;
 using System;
 using System.Collections.Generic;
@@ -9,6 +13,13 @@ namespace PhotoMove.Models
 {
     public class ScanFile
     {
+        public enum FileType
+        {
+            Movie,
+            Photo,
+            Other
+        }
+
         public string filePath { get; set; }
         public string? fileName { get; set; } = string.Empty;
         public string? fileExtension { get; set; } = string.Empty;
@@ -33,8 +44,36 @@ namespace PhotoMove.Models
             filePath = file;
             fileName = Path.GetFileName(file);
             fileExtension = Path.GetExtension(file);
-            isValidExif = true;
-            isValidTakenDate = true;
+
+            //isValidExif = true;
+            //isValidTakenDate = true;
+        }
+
+        public void ReadFile(string filePath)
+        {
+            //var fileMetadata = new ScanFile(filePath);
+
+            try
+            {
+                var fileType = GetFileType(filePath);
+
+                switch (fileType)
+                {
+                    case FileType.Photo:
+                        ExtractMetadataFromMultimediaFile(filePath);
+                        break;
+                    case FileType.Movie:
+                    case FileType.Other:
+                        ExtractMetadataFromNormalFile(filePath);
+                        break;
+                }
+            }
+            catch (Exception)
+            {
+                // Fallback to other metadata extraction methods
+            }
+
+            //return fileMetadata;
         }
 
         public void ReadExifData()
@@ -160,6 +199,97 @@ namespace PhotoMove.Models
                 return temp2;
             else
                 return null;
+        }
+
+        private FileType GetFileType(string filePath)
+        {
+            try
+            {
+                var directories = ImageMetadataReader.ReadMetadata(filePath);
+
+                bool isPhoto = directories.Any(x => (x is ExifIfd0Directory
+                                                    || x is ExifSubIfdDirectory
+                                                    || x is JpegDirectory)
+                            && (x.ContainsTag(ExifDirectoryBase.TagModel)
+                                || x.ContainsTag(ExifDirectoryBase.TagMake)
+                                || x.ContainsTag(ExifDirectoryBase.TagDateTimeOriginal)));
+                if (isPhoto)
+                {
+                    return FileType.Photo;
+                }
+
+                bool isMovie = directories.Any(x => x is QuickTimeFileTypeDirectory
+                                                || x is QuickTimeMetadataHeaderDirectory
+                                                || x is QuickTimeMovieHeaderDirectory
+                                                || x is AviDirectory);
+                if (isMovie)
+                {
+                    return FileType.Movie;
+                }
+            }
+            catch (Exception)
+            {
+                // Fallback to other file type detection methods
+            }
+
+            return FileType.Other;
+        }
+
+        private void ExtractMetadataFromMultimediaFile(string filePath)
+        {
+            var directories = ImageMetadataReader.ReadMetadata(filePath);
+
+            //string cameraModel = string.Empty;
+            //string cameraMake = string.Empty;
+            string originalTakenDateString = string.Empty;
+            bool isFound = false;
+
+            foreach (var directory in directories)
+            {
+                if (isFound)
+                    break;
+
+                foreach (var tag in directory.Tags)
+                {
+                    cameraModel = (tag.Type == ExifDirectoryBase.TagModel) ? tag.Description + "" : cameraModel;
+                    cameraMake = (tag.Type == ExifDirectoryBase.TagMake) ? tag.Description + "" : cameraMake;
+                    originalTakenDateString = (tag.Type == ExifDirectoryBase.TagDateTimeOriginal) ? tag.Description + "" : originalTakenDateString;
+
+                    if (!string.IsNullOrEmpty(cameraMake)
+                        && !string.IsNullOrEmpty(cameraMake)
+                        && !string.IsNullOrEmpty(originalTakenDateString)
+                        )
+                    {
+                        isFound = true;
+                        break;
+                    }
+                }
+            }
+
+            //cameraModel = cameraModel ?? string.Empty;
+            //cameraMake = cameraMake ?? string.Empty;
+
+            if (!string.IsNullOrEmpty(cameraModel) && !string.IsNullOrEmpty(cameraMake))
+                isValidExif = true;
+
+            DateTime? orginalDate = GetValidDateTime(originalTakenDateString);
+            if (orginalDate != null)
+            {
+                takenDate = (DateTime)(orginalDate);
+                isValidTakenDate = true;
+            }
+        }
+
+        private void ExtractMetadataFromNormalFile(string filePath)
+        {
+            // Use alternative methods to extract metadata for normal files
+            // For example, you can try to retrieve the creation date using the .NET file class:
+            var creationTime = File.GetCreationTime(filePath);
+            if (creationTime != default)
+            {
+                takenDate = creationTime;
+                isValidTakenDate = true;
+            }
         }
     }
 }

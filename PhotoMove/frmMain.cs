@@ -234,6 +234,7 @@ namespace PhotoMove
             frmListScanFiles childForm = new();
             childForm.Text = "Files With No Exif Date";
             var filteredFiles = FilteredQuery(x => x.isValidExif && !x.isValidTakenDate);
+            //var filteredFiles = FilteredQuery(x => !x.isValidTakenDate);
             childForm.ShowData(filteredFiles);
             this.Hide();
             childForm.FormClosed += frmListScanFiles_FormClosed; // Attach the FormClosed event handler
@@ -268,12 +269,6 @@ namespace PhotoMove
                     PhotoMoveSettings.Default.Save();
                 }
             }
-        }
-
-        private void btnTestScanFiles_Click(object sender, EventArgs e)
-        {
-            GetUserOptions();
-            DoScanFiles2();
         }
 
         private void timer1_Tick(object? sender, EventArgs e)

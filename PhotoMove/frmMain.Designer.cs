@@ -37,7 +37,6 @@ namespace PhotoMove
             btnChooseFolder = new Button();
             txtPhotoFolder = new TextBox();
             groupBox2 = new GroupBox();
-            btnTestScanFiles = new Button();
             btnChooseOutputFolder = new Button();
             txtDestinationFolder = new TextBox();
             groupBox3 = new GroupBox();
@@ -188,7 +187,6 @@ namespace PhotoMove
             // 
             // groupBox2
             // 
-            groupBox2.Controls.Add(btnTestScanFiles);
             groupBox2.Controls.Add(btnChooseOutputFolder);
             groupBox2.Controls.Add(txtDestinationFolder);
             groupBox2.Location = new Point(12, 131);
@@ -197,16 +195,6 @@ namespace PhotoMove
             groupBox2.TabIndex = 1;
             groupBox2.TabStop = false;
             groupBox2.Text = "Step 2: Set Destination Folder Under Which Date Sorted Folders Will Be Made:";
-            // 
-            // btnTestScanFiles
-            // 
-            btnTestScanFiles.Location = new Point(305, 51);
-            btnTestScanFiles.Name = "btnTestScanFiles";
-            btnTestScanFiles.Size = new Size(76, 23);
-            btnTestScanFiles.TabIndex = 2;
-            btnTestScanFiles.Text = "button1";
-            btnTestScanFiles.UseVisualStyleBackColor = true;
-            btnTestScanFiles.Click += btnTestScanFiles_Click;
             // 
             // btnChooseOutputFolder
             // 
@@ -1147,7 +1135,6 @@ namespace PhotoMove
         private RadioButton radNoSeperator;
         private RadioButton radUseDashesInFolderName;
         private RadioButton radUseUnderscoreInFolderName;
-        private Button btnTestScanFiles;
         private Timer timer1;
     }
 }

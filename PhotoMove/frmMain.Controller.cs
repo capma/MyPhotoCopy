@@ -201,7 +201,8 @@ namespace PhotoMove
 
                 try
                 {
-                    fileInfo.ReadExifData();
+                    //fileInfo.ReadExifData();
+                    fileInfo.ReadFile(file);
 
                     if (fileInfo.isValidExif)
                     {
@@ -212,7 +213,8 @@ namespace PhotoMove
                         });
                     }
 
-                    if (fileInfo.isValidExif && fileInfo.isValidTakenDate)
+                    //if (fileInfo.isValidExif && fileInfo.isValidTakenDate)
+                    if (fileInfo.isValidTakenDate)
                     {
                         validDateCount++;
                         lblHaveValidDate.Invoke((MethodInvoker)delegate
@@ -221,7 +223,8 @@ namespace PhotoMove
                         });
                     }
 
-                    if (fileInfo.isValidExif && !fileInfo.isValidTakenDate)
+                    //if (fileInfo.isValidExif && !fileInfo.isValidTakenDate)
+                    if (!fileInfo.isValidTakenDate)
                     {
                         noValidDateCount++;
                         lblHaveExifButNoValidDate.Invoke((MethodInvoker)delegate
@@ -264,12 +267,18 @@ namespace PhotoMove
         private void CopyOrMoveFiles()
         {
             int fileCount = 0;
-
+            
             var filteredFiles = scanFiles.Where(x => userOptions.selectedFileTypes.Contains(x?.fileExtension ?? string.Empty)
-                                                  && userOptions.selectedCameraModels.Contains(x?.cameraModel ?? string.Empty)
+                                                  && userOptions.selectedCameraModels.Contains(string.IsNullOrEmpty(x?.cameraModel) ? Exif.NoModelInfo : x?.cameraModel ?? string.Empty)
                                                   //&& x.isValidExif
                                                   //&& x.isValidTakenDate
                                                   );
+
+            if (filteredFiles.Count() == 0)
+            {
+                MessageBox.Show("No files to copy!");
+                return;
+            }
 
             pgbCopyingOrMovingFiles.Invoke((MethodInvoker)delegate
             {
@@ -305,7 +314,7 @@ namespace PhotoMove
                     // check if the copying file exists in the destination folder
                     if (!IsDuplicateFile(newFilePath, file.filePath))
                     {
-                        File.Copy(file.filePath, newFilePath);
+                        File.Copy(file.filePath, newFilePath, true);
                         file.isCopiedOrMoved = true;
                     }
                     else
@@ -377,7 +386,8 @@ namespace PhotoMove
 
         private void RefreshFileTypesTab()
         {
-            var validFileTypeCounts = scanFiles.Where(x => x.isValidExif && x.isValidTakenDate)
+            //var validFileTypeCounts = scanFiles.Where(x => x.isValidExif && x.isValidTakenDate)
+            var validFileTypeCounts = scanFiles.Where(x => x.isValidTakenDate)
                     .GroupBy(file => file.fileExtension)
                     .Select(group => new { FileType = group.Key, Count = group.Count() })
                     .OrderBy(x => x.FileType);
@@ -396,7 +406,8 @@ namespace PhotoMove
                 index++;
             }
 
-            var invalidFileTypeCounts = scanFiles.Where(x => x.isValidExif && !x.isValidTakenDate)
+            //var invalidFileTypeCounts = scanFiles.Where(x => x.isValidExif && !x.isValidTakenDate)
+            var invalidFileTypeCounts = scanFiles.Where(x => !x.isValidTakenDate)
                     .GroupBy(file => file.fileExtension)
                     .Select(group => new { FileType = group.Key, Count = group.Count() })
                     .OrderBy(x => x.FileType);
@@ -629,36 +640,6 @@ namespace PhotoMove
                                     .ToList();
 
             return scanFilesReport;
-        }
-
-        private void DoScanFiles2()
-        {
-            var files = System.IO.Directory.GetFiles(userOptions.selectedFolderWithPhotosToProcess, "*.*", SearchOption.AllDirectories);
-            List<ScanFile> scanFiles = new();
-
-            foreach (var file in files)
-            {
-                ScanFile scanFile = new(file);
-
-                try
-                {
-                    scanFile.ReadExifData();
-                }
-                catch (Exception)
-                {
-
-                }
-                finally
-                {
-                    scanFiles.Add(scanFile);
-                }
-            }
-
-            string json = JsonSerializer.Serialize(scanFiles);
-            File.WriteAllText(userOptions.selectedDestinationFolder + @"\scanfiles.json", json);
-
-
-            // breakpoint here
         }
     }
 }
