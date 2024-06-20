@@ -3,9 +3,11 @@ using MetadataExtractor.Formats.Avi;
 using MetadataExtractor.Formats.Exif;
 using MetadataExtractor.Formats.Jpeg;
 using MetadataExtractor.Formats.QuickTime;
-using PhotoMove.Constants;
+using Newtonsoft.Json;
+using PhotoMove.Enums;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -13,13 +15,6 @@ namespace PhotoMove.Models
 {
     public class ScanFile
     {
-        public enum FileType
-        {
-            Movie,
-            Photo,
-            Other
-        }
-
         public string filePath { get; set; }
         public string? fileName { get; set; } = string.Empty;
         public string? fileExtension { get; set; } = string.Empty;
@@ -28,9 +23,18 @@ namespace PhotoMove.Models
         public string? cameraMake { get; set; } = string.Empty;
         public bool isValidExif { get; set; } = false;
         public bool isValidTakenDate { get; set; } = false;
-        public bool isCopiedOrMoved { get; set; } = false;
-        public List<MyTag> tags { get; set; }
-        public List<string> errors { get; set; }
+        public bool isTransferred { get; set; } = false;
+        public bool isProcessed { get; set; } = false;
+        public string destination { get; set; }
+        public string action { get; set; }
+        public DateTime fileDate { get; set; }
+
+        private IReadOnlyList<MetadataExtractor.Directory> directories { get; set; }
+
+        public ScanFile()
+        {
+            
+        }
 
         /// <summary>
         /// Custom constructor
@@ -38,149 +42,40 @@ namespace PhotoMove.Models
         /// <param name="file"></param>
         public ScanFile(string file)
         {
-            tags = new List<MyTag>();
-            errors = new List<string>();
-
             filePath = file;
             fileName = Path.GetFileName(file);
             fileExtension = Path.GetExtension(file);
-
-            //isValidExif = true;
-            //isValidTakenDate = true;
         }
 
         public void ReadFile(string filePath)
         {
-            //var fileMetadata = new ScanFile(filePath);
-
             try
             {
+                directories = ImageMetadataReader.ReadMetadata(filePath);
+
                 var fileType = GetFileType(filePath);
 
                 switch (fileType)
                 {
                     case FileType.Photo:
-                        ExtractMetadataFromMultimediaFile(filePath);
-                        break;
                     case FileType.Movie:
+                        ExtractMetadataFromPhotoFile(filePath);
+                        break;
+                    //case FileType.Movie:
+                    //    ExtractMetadataFromMovieFile(filePath);
+                    //    break;
                     case FileType.Other:
-                        ExtractMetadataFromNormalFile(filePath);
+                        TryExtractCreateDateFromFile(filePath);
                         break;
                 }
             }
             catch (Exception)
             {
-                // Fallback to other metadata extraction methods
-            }
-
-            //return fileMetadata;
-        }
-
-        public void ReadExifData()
-        {
-            try
-            {
-                var directories = ImageMetadataReader.ReadMetadata(filePath);
-
-                foreach (var directory in directories)
-                {
-                    foreach (var tag in directory.Tags)
-                    {
-                        if (tag.HasName && 
-                                (
-                                    tag.Name.Contains(Exif.ExifTag) 
-                                        || tag.Name.Contains(Exif.TakenDate)
-                                        || tag.Name.Contains(Exif.CameraMakeTag)
-                                        || tag.Name.Contains(Exif.CameraModelTag)
-                                )
-                            )
-                        {
-                            MyTag myTag = new();
-                            myTag.DirectoryName = directory.Name;
-                            myTag.TagName = tag.Name;
-                            myTag.Description = tag?.Description;
-
-                            tags.Add(myTag);
-                        }
-                    }
-
-                    if (directory.HasError)
-                    {
-                        foreach (var error in directory.Errors)
-                        {
-                            errors.Add($"ERROR: {error}");
-                        }
-                    }
-                }
-
-                if (tags.Count == 0)
-                {
-                    isValidExif = false;
-                    isValidTakenDate = false;
-                }
-
-                if (tags.Count > 0)
-                {
-                    string? takenDateString = GetOriginalTakenDate();
-                    if (takenDateString != null) 
-                    {
-                        DateTime? orginalDate = GetValidDateTime(takenDateString);
-                        if (orginalDate != null)
-                        {
-                            takenDate = (DateTime)orginalDate;
-                        }
-                        else
-                        {
-                            isValidTakenDate = false;
-                        }
-                    }
-                    else
-                    {
-                        isValidTakenDate = false;
-                    }
-
-                    cameraModel = GetCameraModel();
-                    cameraMake = GetCameraMake();
-                }
-                
-            }
-            catch (Exception)
-            {
-                isValidExif = false;
-                isValidTakenDate = false;
+                TryExtractCreateDateFromFile(filePath);
             }
         }
 
-        private string? GetOriginalTakenDate()
-        {
-            var originDate = tags.Where(x => x.DirectoryName.Contains(Exif.ExifTag) && x.TagName.Contains(Exif.TakenDate))
-                                    .FirstOrDefault()?
-                                    .Description
-                                    ;
-            return originDate;
-        }
-
-        private string? GetCameraModel()
-        {
-            var cameraModel = tags.Where(x => x.DirectoryName.Contains(Exif.ExifTag) && x.TagName.Contains(Exif.CameraModelTag))
-                                    .FirstOrDefault()?
-                                    .Description
-                                    ;
-
-            return cameraModel;
-        }
-
-        private string? GetCameraMake()
-        {
-            var cameraMake = tags.Where(x => x.DirectoryName.Contains(Exif.ExifTag) && x.TagName.Contains(Exif.CameraMakeTag))
-                                    .FirstOrDefault()?
-                                    .Description
-                                    ;
-
-            return cameraMake;
-        }
-
-        private DateTime? GetValidDateTime(string input)
+        public DateTime? GetValidDateTime(string input)
         {
             DateTime temp;
             DateTime temp2;
@@ -189,7 +84,7 @@ namespace PhotoMove.Models
                 "dd/MM/yyyy HH:mm:ss", "dd-MM-yyyy HH:mm:ss", "dd.MM.yyyy HH:mm:ss", "dd MM yyyy HH:mm:ss", // DMY formats
                 "yyyy/MM/dd HH:mm:ss", "yyyy-MM-dd HH:mm:ss", "yyyy.MM.dd HH:mm:ss", "yyyy MM dd HH:mm:ss", // YMD formats
                 "MM/dd/yyyy HH:mm:ss", "MM-dd-yyyy HH:mm:ss", "MM.dd.yyyy HH:mm:ss", "MM dd yyyy HH:mm:ss", // MDY formats
-                "yyyy:MM:dd HH:mm:ss", "yyyy-MM-ddTHH:mm:ss.fffzzz" // ISO 8601 format
+                "yyyy:MM:dd HH:mm:ss", "yyyy-MM-ddTHH:mm:ss.fffzzz", "yyyy:MM:dd HH:mm:sszzz" // ISO 8601 format
             };
 
             if (DateTime.TryParseExact(input, formats, null, System.Globalization.DateTimeStyles.None, out temp))
@@ -205,8 +100,6 @@ namespace PhotoMove.Models
         {
             try
             {
-                var directories = ImageMetadataReader.ReadMetadata(filePath);
-
                 bool isPhoto = directories.Any(x => (x is ExifIfd0Directory
                                                     || x is ExifSubIfdDirectory
                                                     || x is JpegDirectory)
@@ -235,12 +128,8 @@ namespace PhotoMove.Models
             return FileType.Other;
         }
 
-        private void ExtractMetadataFromMultimediaFile(string filePath)
+        private void ExtractMetadataFromPhotoFile(string filePath)
         {
-            var directories = ImageMetadataReader.ReadMetadata(filePath);
-
-            //string cameraModel = string.Empty;
-            //string cameraMake = string.Empty;
             string originalTakenDateString = string.Empty;
             bool isFound = false;
 
@@ -266,11 +155,8 @@ namespace PhotoMove.Models
                 }
             }
 
-            //cameraModel = cameraModel ?? string.Empty;
-            //cameraMake = cameraMake ?? string.Empty;
-
-            if (!string.IsNullOrEmpty(cameraModel) && !string.IsNullOrEmpty(cameraMake))
-                isValidExif = true;
+            //isValidExif = (!string.IsNullOrEmpty(cameraModel) && !string.IsNullOrEmpty(cameraMake));
+            isValidExif = true;
 
             DateTime? orginalDate = GetValidDateTime(originalTakenDateString);
             if (orginalDate != null)
@@ -280,15 +166,65 @@ namespace PhotoMove.Models
             }
         }
 
-        private void ExtractMetadataFromNormalFile(string filePath)
+        private void ExtractMetadataFromMovieFile(string filePath)
         {
-            // Use alternative methods to extract metadata for normal files
-            // For example, you can try to retrieve the creation date using the .NET file class:
-            var creationTime = File.GetCreationTime(filePath);
-            if (creationTime != default)
+            try
             {
-                takenDate = creationTime;
-                isValidTakenDate = true;
+                var process = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = @"exiftool.exe",
+                        Arguments = $"-Make -Model -CreateDate -json \"{filePath}\"",
+                        RedirectStandardOutput = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                    }
+                };
+
+                process.Start();
+                string output = process.StandardOutput.ReadToEnd();
+                process.WaitForExit();
+
+                // Parse the output and add it to the list
+                var metadata = JsonConvert.DeserializeObject<List<FileMetadata>>(output);
+
+                cameraModel = metadata?.FirstOrDefault()?.Model;
+                cameraMake = metadata?.FirstOrDefault()?.Make;
+                isValidExif = true;
+
+                string originalTakenDateString = metadata?.FirstOrDefault()?.CreateDate + "";
+                DateTime? orginalDate = GetValidDateTime(originalTakenDateString);
+                if (orginalDate != null)
+                {
+                    takenDate = (DateTime)(orginalDate);
+                    isValidTakenDate = true;
+                }
+            }
+            catch (Exception)
+            {
+                isValidExif = false;
+                isValidTakenDate = false;
+                TryExtractCreateDateFromFile(filePath);
+            }
+        }
+
+        private void TryExtractCreateDateFromFile(string filePath)
+        {
+            try
+            {
+                // Use alternative methods to extract metadata for normal files
+                // For example, you can try to retrieve the creation date using the .NET file class:
+                var creationTime = File.GetCreationTime(filePath);
+                if (creationTime != default)
+                {
+                    //takenDate = creationTime;
+                    fileDate = creationTime;
+                }
+            }
+            catch (Exception)
+            {
+                // silent
             }
         }
     }

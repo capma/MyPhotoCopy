@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="MetadataExtractor" Version="2.8.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,6 +22,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="exiftool.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="PhotoMoveSettings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>PhotoMoveSettings.Designer.cs</LastGenOutput>

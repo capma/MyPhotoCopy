@@ -103,6 +103,7 @@ namespace PhotoMove
                 GetUserOptions();
 
                 await Task.Run(() => DoScanFiles(), cancellationTokenSource.Token);
+                //await Task.Run(() => DoScanFilesUsingExifTool(), cancellationTokenSource.Token);
 
                 grbFindingPhottos.Visible = false;
                 pgbFindingFiles.Visible = false;
@@ -116,6 +117,10 @@ namespace PhotoMove
                 //break;
                 grbFindingPhottos.Visible = false;
                 pgbFindingFiles.Visible = false;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Warning", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
             finally 
             {
@@ -222,7 +227,7 @@ namespace PhotoMove
         {
             frmListScanFiles childForm = new();
             childForm.Text = "Valid Exif Date Files";
-            var filteredFiles = FilteredQuery(x => x.isValidTakenDate);
+            var filteredFiles = FilteredQuery(x => x.isValidExif && x.isValidTakenDate);
             childForm.ShowData(filteredFiles);
             this.Hide();
             childForm.FormClosed += frmListScanFiles_FormClosed; // Attach the FormClosed event handler
@@ -233,7 +238,7 @@ namespace PhotoMove
         {
             frmListScanFiles childForm = new();
             childForm.Text = "Files With No Exif Date";
-            var filteredFiles = FilteredQuery(x => x.isValidExif && !x.isValidTakenDate);
+            var filteredFiles = FilteredQuery(x => !x.isValidTakenDate);
             //var filteredFiles = FilteredQuery(x => !x.isValidTakenDate);
             childForm.ShowData(filteredFiles);
             this.Hide();
@@ -244,8 +249,8 @@ namespace PhotoMove
         private void btnShowSummaryReport_Click(object sender, EventArgs e)
         {
             frmListScanFiles childForm = new();
-            var filteredFiles = FilteredQuery(x => x.isCopiedOrMoved);
-            childForm.ShowData(filteredFiles);
+            var filteredFiles = FilteredQuery(x => x.isProcessed);
+            childForm.ShowSummaryData(filteredFiles);
             this.Hide();
             childForm.FormClosed += frmListScanFiles_FormClosed; // Attach the FormClosed event handler
             childForm.ShowDialog();

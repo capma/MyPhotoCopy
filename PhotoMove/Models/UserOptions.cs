@@ -13,6 +13,7 @@ namespace PhotoMove.Models
         public int selectedHowToMoveOrCopyExistedFilesInTheDestinationFolder { get; set; }
         public bool checkedUseFileDateToMoveOrCopyToStructureFolder { get; set; }
         public bool checkedCopyOrMoveFilesWithNoExifDateCreatedToThisFolder { get; set; }
+        public bool checkedIncludeSubFolder { get; set; }
         public List<string> selectedFileTypes { get; set; } = new();
         public List<string> selectedCameraModels { get; set; } = new();
         public bool checkedUseDashesInFolderNames { get; set; }

@@ -8,5 +8,8 @@
         public string? Model { get; set; } = string.Empty;
         public string? Date { get; set; }
         public string? Time { get; set; }
+        public string? Destination { get; set; }
+        public string? Action { get; set; }
+        public string? FileDate { get; set; }
     }
 }
