@@ -39,6 +39,7 @@ namespace PhotoMove
             txtDestinationFolder.Text = (string.IsNullOrEmpty(PhotoMoveSettings.Default.DestinationFolder)) ? string.Empty : PhotoMoveSettings.Default.DestinationFolder.ToString();
             txtDuplicatesFolderPath.Text = (string.IsNullOrEmpty(PhotoMoveSettings.Default.DuplicatesFolder)) ? string.Empty : PhotoMoveSettings.Default.DuplicatesFolder.ToString();
             txtFolderForFilesWithNoExif.Text = (string.IsNullOrEmpty(PhotoMoveSettings.Default.FilesWithNoExifDateCreatedFolder)) ? string.Empty : PhotoMoveSettings.Default.FilesWithNoExifDateCreatedFolder.ToString();
+            chkDonotHandleVideos.Checked = PhotoMoveSettings.Default.DoNotHandleVideos;
 
             // Check the radio button based on the stored value
             if (PhotoMoveSettings.Default.selectedSeperatorInFolderName == 0)
@@ -185,7 +186,7 @@ namespace PhotoMove
                 pgbFindingFiles.Step = 1;
             });
 
-            var excludedMovieExtensions = new List<string> { ".mov", ".mp4", ".avi", ".wmv", ".webm", ".ogg" };
+            var excludedMovieExtensions = new List<string> { ".mov", ".mp4", ".avi", ".wmv", ".webm", ".ogg", ".mkv" };
             var photoAndNormalFiles = files.Where(file => !excludedMovieExtensions.Any(x => file.ToLower().EndsWith(x)));
 
             // process photos/pictures/images and normal files
@@ -223,8 +224,8 @@ namespace PhotoMove
                         });
                     }
 
-                    if (fileInfo.isValidExif && fileInfo.isValidTakenDate)
-                    //if (fileInfo.isValidTakenDate)
+                    //if (fileInfo.isValidExif && fileInfo.isValidTakenDate)
+                    if (fileInfo.isValidTakenDate)
                     {
                         scanStatistics.validDateCount++;
                         lblHaveValidDate.Invoke((MethodInvoker)delegate
@@ -278,9 +279,11 @@ namespace PhotoMove
                 pgbFindingFiles.Step = 1;
             });
 
-            // process movies
-            ScanMovies(userOptions.selectedFolderWithPhotosToProcess, scanStatistics);
-
+            if (!userOptions.checkedDoNotHandleVideos)
+            {
+                // process movies
+                ScanMovies(userOptions.selectedFolderWithPhotosToProcess, scanStatistics);
+            }
 
 
             tabFileOptions.Invoke((MethodInvoker)delegate
@@ -302,7 +305,7 @@ namespace PhotoMove
         {
             Process process = new Process();
             process.StartInfo.FileName = "exiftool";
-            process.StartInfo.Arguments = "-json -sourcefile -filename -make -model -createdate -filemodifydate -fileaccessdate -filecreatedate -filetypeextension -r -fast2 -ext mov -ext avi -ext mp4 -ext webm -ext ogg -ext wmv " + folder;
+            process.StartInfo.Arguments = "-json -sourcefile -filename -make -model -datetimeoriginal -createdate -filemodifydate -fileaccessdate -filecreatedate -filetypeextension -r -fast2 -ext mov -ext avi -ext mp4 -ext webm -ext ogg -ext wmv -ext mkv " + folder;
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.RedirectStandardOutput = true;
             process.StartInfo.CreateNoWindow = true;
@@ -335,7 +338,8 @@ namespace PhotoMove
                     newScanFile.fileExtension = "." + item.FileTypeExtension;
                     newScanFile.fileName = item.FileName;
 
-                    DateTime? createDate = newScanFile.GetValidDateTime(item.CreateDate ?? string.Empty);
+                    string? takenDate = item.DateTimeOriginal ?? item.CreateDate;
+                    DateTime? createDate = newScanFile.GetValidDateTime(takenDate ?? string.Empty);
                     if (createDate != null)
                     {
                         newScanFile.takenDate = (DateTime)(createDate);
@@ -347,9 +351,12 @@ namespace PhotoMove
                         newScanFile.fileDate = (DateTime)(fileModifyDate);
                     }
 
-                    //newScanFile.isValidExif = (!string.IsNullOrEmpty(item.Model) && !string.IsNullOrEmpty(item.Make));
-                    newScanFile.isValidExif = true;
-                    newScanFile.isValidTakenDate = (!string.IsNullOrEmpty(item.CreateDate));
+                    
+                    newScanFile.isValidTakenDate = !string.IsNullOrEmpty(item.DateTimeOriginal) || (!string.IsNullOrEmpty(item.CreateDate));
+                    newScanFile.isValidExif = (!string.IsNullOrEmpty(item.Model) && !string.IsNullOrEmpty(item.Make)) 
+                                                || !string.IsNullOrEmpty(item.DateTimeOriginal)
+                                                || !string.IsNullOrEmpty(item.CreateDate)
+                                                ;
 
                     if (newScanFile.isValidExif)
                     {
@@ -360,7 +367,8 @@ namespace PhotoMove
                         });
                     }
 
-                    if (newScanFile.isValidExif && newScanFile.isValidTakenDate)
+                    //if (newScanFile.isValidExif && newScanFile.isValidTakenDate)
+                    if (newScanFile.isValidTakenDate)
                     {
                         scanStatistics.validDateCount++;
                         lblHaveValidDate.Invoke((MethodInvoker)delegate
@@ -431,13 +439,22 @@ namespace PhotoMove
                     System.IO.Directory.CreateDirectory(newFolderPath);
 
                     // Copy the file to the new directory
-                    string newFilePath = file.fileName != null ? Path.Combine(newFolderPath, file.fileName) : newFolderPath;
+
+                    // Get the file name as a byte array using UTF-8 encoding
+                    byte[] fileNameBytes = System.Text.Encoding.UTF8.GetBytes(file.fileName);
+
+                    // Sanitize the file name by replacing invalid characters with an underscore
+                    string cleanFileName = string.Concat(fileNameBytes.Select(b => Path.GetInvalidFileNameChars().Contains((char)b) ? "_" : ((char)b).ToString()));
+
+                    string newFilePath = file.fileName != null ? Path.Combine(newFolderPath, cleanFileName) : newFolderPath;
+
                     file.destination = newFilePath;
                     file.isProcessed = true;
 
                     // check if the copying file exists in the destination folder
                     if (!IsDuplicateFile(newFilePath, file.filePath))
                     {
+                        //File.Copy(file.filePath, newFilePath, true);
                         File.Copy(file.filePath, newFilePath, true);
                         file.isTransferred = true;
                     }
@@ -516,8 +533,8 @@ namespace PhotoMove
 
         private void RefreshFileTypesTab()
         {
-            var validFileTypeCounts = scanFiles.Where(x => x.isValidExif && x.isValidTakenDate)
-            //var validFileTypeCounts = scanFiles.Where(x => x.isValidTakenDate)
+            //var validFileTypeCounts = scanFiles.Where(x => x.isValidExif && x.isValidTakenDate)
+            var validFileTypeCounts = scanFiles.Where(x => x.isValidTakenDate)
                     .GroupBy(file => file.fileExtension)
                     .Select(group => new { FileType = group.Key, Count = group.Count() })
                     .OrderBy(x => x.FileType);
@@ -560,7 +577,8 @@ namespace PhotoMove
         private void RefreshCameraModelsTab()
         {
             var validCameraModels = scanFiles
-                    .Where(x => x.isValidExif && x.isValidTakenDate)
+                    //.Where(x => x.isValidExif && x.isValidTakenDate)
+                    .Where(x => x.isValidTakenDate)
                     .GroupBy(file => file.cameraModel)
                     .Select(group => new { CameraModel = group.Key, Count = group.Count() })
                     .OrderBy(x => x.CameraModel);
@@ -629,6 +647,7 @@ namespace PhotoMove
             userOptions.checkedCopyOrMoveFilesWithNoExifDateCreatedToThisFolder = chkCopyOrMoveToThisFolder.Checked;
             userOptions.selectedFolderForFilesWithNoExifDateCreated = txtFolderForFilesWithNoExif.Text;
             userOptions.checkedIncludeSubFolder = chkIncludeSubFolders.Checked;
+            userOptions.checkedDoNotHandleVideos = chkDonotHandleVideos.Checked;
 
             // reset
             userOptions.selectedFileTypes.Clear();

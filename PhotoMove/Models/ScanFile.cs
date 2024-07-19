@@ -84,7 +84,8 @@ namespace PhotoMove.Models
                 "dd/MM/yyyy HH:mm:ss", "dd-MM-yyyy HH:mm:ss", "dd.MM.yyyy HH:mm:ss", "dd MM yyyy HH:mm:ss", // DMY formats
                 "yyyy/MM/dd HH:mm:ss", "yyyy-MM-dd HH:mm:ss", "yyyy.MM.dd HH:mm:ss", "yyyy MM dd HH:mm:ss", // YMD formats
                 "MM/dd/yyyy HH:mm:ss", "MM-dd-yyyy HH:mm:ss", "MM.dd.yyyy HH:mm:ss", "MM dd yyyy HH:mm:ss", // MDY formats
-                "yyyy:MM:dd HH:mm:ss", "yyyy-MM-ddTHH:mm:ss.fffzzz", "yyyy:MM:dd HH:mm:sszzz" // ISO 8601 format
+                "yyyy:MM:dd HH:mm:ss", "yyyy-MM-ddTHH:mm:ss.fffzzz", "yyyy:MM:dd HH:mm:sszzz", // ISO 8601 format
+                "yyyy:MM:dd HH:mm:ssZ"
             };
 
             if (DateTime.TryParseExact(input, formats, null, System.Globalization.DateTimeStyles.None, out temp))
@@ -155,15 +156,14 @@ namespace PhotoMove.Models
                 }
             }
 
-            //isValidExif = (!string.IsNullOrEmpty(cameraModel) && !string.IsNullOrEmpty(cameraMake));
-            isValidExif = true;
-
             DateTime? orginalDate = GetValidDateTime(originalTakenDateString);
             if (orginalDate != null)
             {
                 takenDate = (DateTime)(orginalDate);
                 isValidTakenDate = true;
             }
+
+            isValidExif = (!string.IsNullOrEmpty(cameraModel) && !string.IsNullOrEmpty(cameraMake)) || !string.IsNullOrEmpty(originalTakenDateString);
         }
 
         private void ExtractMetadataFromMovieFile(string filePath)

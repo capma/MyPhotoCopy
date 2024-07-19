@@ -19,6 +19,7 @@ namespace PhotoMove.Models
         public bool checkedUseDashesInFolderNames { get; set; }
         public bool checkedNoSeperator { get; set; }
         public bool checkedUseUnderscoresInFolderNames {  get; set; }
+        public bool checkedDoNotHandleVideos { get; set; }
 
     }
 }

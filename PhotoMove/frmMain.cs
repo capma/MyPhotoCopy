@@ -28,6 +28,7 @@ namespace PhotoMove
             grbCopyOrMove.Enabled = false;
 
             FolderBrowserDialog folderBrowserDialog = new();
+            folderBrowserDialog.SelectedPath = txtPhotoFolder.Text + "\\";
             DialogResult result = folderBrowserDialog.ShowDialog();
             if (result == DialogResult.OK)
             {
@@ -43,6 +44,7 @@ namespace PhotoMove
         private void btnChooseOutputFolder_Click(object sender, EventArgs e)
         {
             FolderBrowserDialog folderBrowserDialog = new();
+            folderBrowserDialog.SelectedPath = txtDestinationFolder.Text + "\\";
             DialogResult result = folderBrowserDialog.ShowDialog();
             if (result == DialogResult.OK)
             {
@@ -56,6 +58,7 @@ namespace PhotoMove
         private void btnChooseDuplicatesFolderPath_Click(object sender, EventArgs e)
         {
             FolderBrowserDialog folderBrowserDialog = new();
+            folderBrowserDialog.SelectedPath = txtDuplicatesFolderPath.Text;
             DialogResult result = folderBrowserDialog.ShowDialog();
             if (result == DialogResult.OK)
             {
@@ -122,7 +125,7 @@ namespace PhotoMove
             {
                 MessageBox.Show(ex.Message, "Warning", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
-            finally 
+            finally
             {
                 stopwatch.Stop();
                 timer1.Stop();
@@ -156,7 +159,7 @@ namespace PhotoMove
                 //break;
                 grbCancel.Visible = false;
             }
-            finally 
+            finally
             {
                 stopwatch.Stop();
                 timer1.Stop();
@@ -280,6 +283,12 @@ namespace PhotoMove
         {
             // Update the status strip
             toolStripStatusLabel1.Text = $"Time: {stopwatch.Elapsed.ToString()} seconds elapsed.";
+        }
+
+        private void chkDonotCopyMoveVideos_CheckedChanged(object sender, EventArgs e)
+        {
+            PhotoMoveSettings.Default.DoNotHandleVideos = chkDonotHandleVideos.Checked;
+            PhotoMoveSettings.Default.Save();
         }
     }
 }

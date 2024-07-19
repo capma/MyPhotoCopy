@@ -101,6 +101,8 @@ namespace PhotoMove
             label8 = new Label();
             label3 = new Label();
             tabPage3 = new TabPage();
+            groupBox4 = new GroupBox();
+            chkDonotHandleVideos = new CheckBox();
             grbSeperatorInFolderName = new GroupBox();
             radUseUnderscoreInFolderName = new RadioButton();
             radNoSeperator = new RadioButton();
@@ -137,6 +139,7 @@ namespace PhotoMove
             splitContainer2.Panel2.SuspendLayout();
             splitContainer2.SuspendLayout();
             tabPage3.SuspendLayout();
+            groupBox4.SuspendLayout();
             grbSeperatorInFolderName.SuspendLayout();
             menuStrip1.SuspendLayout();
             statusStrip1.SuspendLayout();
@@ -880,6 +883,7 @@ namespace PhotoMove
             // 
             // tabPage3
             // 
+            tabPage3.Controls.Add(groupBox4);
             tabPage3.Controls.Add(grbSeperatorInFolderName);
             tabPage3.Location = new Point(4, 24);
             tabPage3.Name = "tabPage3";
@@ -888,22 +892,47 @@ namespace PhotoMove
             tabPage3.Text = "Other Options";
             tabPage3.UseVisualStyleBackColor = true;
             // 
+            // groupBox4
+            // 
+            groupBox4.Controls.Add(chkDonotHandleVideos);
+            groupBox4.Dock = DockStyle.Bottom;
+            groupBox4.Location = new Point(0, 123);
+            groupBox4.Name = "groupBox4";
+            groupBox4.Size = new Size(414, 125);
+            groupBox4.TabIndex = 3;
+            groupBox4.TabStop = false;
+            groupBox4.Text = "Others";
+            // 
+            // chkDonotHandleVideos
+            // 
+            chkDonotHandleVideos.AutoSize = true;
+            chkDonotHandleVideos.Checked = true;
+            chkDonotHandleVideos.CheckState = CheckState.Checked;
+            chkDonotHandleVideos.Location = new Point(21, 22);
+            chkDonotHandleVideos.Name = "chkDonotHandleVideos";
+            chkDonotHandleVideos.Size = new Size(131, 19);
+            chkDonotHandleVideos.TabIndex = 0;
+            chkDonotHandleVideos.Text = "Don't handle videos";
+            chkDonotHandleVideos.UseVisualStyleBackColor = true;
+            chkDonotHandleVideos.CheckedChanged += chkDonotCopyMoveVideos_CheckedChanged;
+            // 
             // grbSeperatorInFolderName
             // 
             grbSeperatorInFolderName.Controls.Add(radUseUnderscoreInFolderName);
             grbSeperatorInFolderName.Controls.Add(radNoSeperator);
             grbSeperatorInFolderName.Controls.Add(radUseDashesInFolderName);
-            grbSeperatorInFolderName.Dock = DockStyle.Fill;
+            grbSeperatorInFolderName.Dock = DockStyle.Top;
             grbSeperatorInFolderName.Location = new Point(0, 0);
             grbSeperatorInFolderName.Name = "grbSeperatorInFolderName";
-            grbSeperatorInFolderName.Size = new Size(414, 248);
+            grbSeperatorInFolderName.Size = new Size(414, 118);
             grbSeperatorInFolderName.TabIndex = 2;
             grbSeperatorInFolderName.TabStop = false;
+            grbSeperatorInFolderName.Text = "File name";
             // 
             // radUseUnderscoreInFolderName
             // 
             radUseUnderscoreInFolderName.AutoSize = true;
-            radUseUnderscoreInFolderName.Location = new Point(21, 102);
+            radUseUnderscoreInFolderName.Location = new Point(21, 98);
             radUseUnderscoreInFolderName.Name = "radUseUnderscoreInFolderName";
             radUseUnderscoreInFolderName.Size = new Size(201, 19);
             radUseUnderscoreInFolderName.TabIndex = 2;
@@ -927,7 +956,7 @@ namespace PhotoMove
             // radUseDashesInFolderName
             // 
             radUseDashesInFolderName.AutoSize = true;
-            radUseDashesInFolderName.Location = new Point(21, 67);
+            radUseDashesInFolderName.Location = new Point(21, 65);
             radUseDashesInFolderName.Name = "radUseDashesInFolderName";
             radUseDashesInFolderName.Size = new Size(270, 19);
             radUseDashesInFolderName.TabIndex = 1;
@@ -1043,6 +1072,8 @@ namespace PhotoMove
             ((System.ComponentModel.ISupportInitialize)splitContainer2).EndInit();
             splitContainer2.ResumeLayout(false);
             tabPage3.ResumeLayout(false);
+            groupBox4.ResumeLayout(false);
+            groupBox4.PerformLayout();
             grbSeperatorInFolderName.ResumeLayout(false);
             grbSeperatorInFolderName.PerformLayout();
             menuStrip1.ResumeLayout(false);
@@ -1136,5 +1167,7 @@ namespace PhotoMove
         private RadioButton radUseDashesInFolderName;
         private RadioButton radUseUnderscoreInFolderName;
         private Timer timer1;
+        private GroupBox groupBox4;
+        private CheckBox chkDonotHandleVideos;
     }
 }

@@ -106,5 +106,17 @@ namespace PhotoMove {
                 this["selectedSeperatorInFolderName"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool DoNotHandleVideos {
+            get {
+                return ((bool)(this["DoNotHandleVideos"]));
+            }
+            set {
+                this["DoNotHandleVideos"] = value;
+            }
+        }
     }
 }
